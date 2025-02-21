@@ -1,7 +1,7 @@
 {
-  "name": "Ultra-Long Phaser Runner",
-  "short_name": "LongRunner",
-  "description": "An artificially huge Subway Surfers–style endless runner with offline PWA support.",
+  "name": "Massive No-Image Runner",
+  "short_name": "NoImgRunner",
+  "description": "An extremely large, stylish Phaser 3 runner that uses no external images.",
   "icons": [
     {
       "src": "icon.png",
