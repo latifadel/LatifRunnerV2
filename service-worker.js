@@ -1,5 +1,5 @@
-// service-worker.js - Simple caching for offline support
-const CACHE_NAME = 'latif-runner-v1';
+// service-worker.js
+const CACHE_NAME = 'latif-runner-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,17 +11,13 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js'
 ];
 
-// Install event - cache necessary files
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -37,7 +33,6 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve cached content if offline
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
