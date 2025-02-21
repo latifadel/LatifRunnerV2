@@ -1,7 +1,7 @@
 {
-  "name": "Phaser Endless Runner",
-  "short_name": "EndlessRunner",
-  "description": "A simple Phaser 3 endless runner PWA.",
+  "name": "Phaser Runner",
+  "short_name": "Runner",
+  "description": "A Subway Surfer–style endless runner made with Phaser 3",
   "icons": [
     {
       "src": "icon.png",
