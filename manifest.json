@@ -1,7 +1,7 @@
 {
-  "name": "Minimal Phaser Runner",
-  "short_name": "Runner",
-  "description": "A simple, no-image Phaser 3 endless runner with offline support.",
+  "name": "Phaser Endless Runner",
+  "short_name": "EndlessRunner",
+  "description": "A simple Phaser 3 endless runner PWA.",
   "icons": [
     {
       "src": "icon.png",
@@ -15,7 +15,6 @@
     }
   ],
   "start_url": "./index.html",
-  "scope": "./",
   "background_color": "#000000",
   "theme_color": "#000000",
   "display": "standalone",
