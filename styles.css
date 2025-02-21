@@ -1,37 +1,39 @@
-/* Simple styling */
+/* Basic styling for a centered, portrait game area */
 body {
   margin: 0;
   padding: 0;
-  background: #222;
-  color: #fff;
+  background: #fafafa;
   font-family: sans-serif;
-  text-align: center;
 }
 
 #gameContainer {
   margin: 0 auto;
-  padding: 0;
   position: relative;
-  width: 360px; /* Match the game width (in main.js config) */
-  height: 640px; /* Match the game height (in main.js config) */
+  width: 360px;  /* Game width */
+  height: 640px; /* Game height */
   background: #000;
-  border: 2px solid #333;
+  border: 2px solid #ccc;
+  overflow: hidden;
+}
+
+/* In-game text overlays */
+#scoreText, #gameOverText {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  text-shadow: 1px 1px 2px #333;
+  font-weight: bold;
+  pointer-events: none;
 }
 
 #scoreText {
-  position: absolute;
   top: 10px;
-  left: 10px;
-  font-size: 18px;
-  z-index: 10;
+  font-size: 20px;
 }
 
 #gameOverText {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 24px;
-  font-weight: bold;
-  display: none; /* Only displayed when game over */
+  top: 40%;
+  font-size: 28px;
+  display: none;
 }
