@@ -1,5 +1,5 @@
 // service-worker.js - Simple caching for offline support
-const CACHE_NAME = 'phaser-endless-runner-v1';
+const CACHE_NAME = 'latif-runner-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,7 +7,7 @@ const ASSETS_TO_CACHE = [
   './main.js',
   './service-worker.js',
   './manifest.json',
-  './icon.png', // Your PWA icon
+  './icon.png',
   'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js'
 ];
 
