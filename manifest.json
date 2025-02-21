@@ -1,7 +1,7 @@
 {
-  "name": "Phaser Runner",
-  "short_name": "Runner",
-  "description": "A Subway Surfers–style endless runner with offline PWA support.",
+  "name": "Ultra-Long Phaser Runner",
+  "short_name": "LongRunner",
+  "description": "An artificially huge Subway Surfers–style endless runner with offline PWA support.",
   "icons": [
     {
       "src": "icon.png",
