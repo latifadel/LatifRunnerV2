@@ -2,87 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Phaser 3 Runner – Extended Edition</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Phaser Runner Minimal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="A fully functioning no-image Phaser 3 endless runner. Swipe to dodge obstacles and collect coins, now truly working!">
-  
-  <!-- Social media / SEO (optional) -->
-  <meta property="og:title" content="Phaser 3 Runner – PWA">
-  <meta property="og:description" content="A robust no-image runner built with Phaser 3.">
-  <meta property="og:image" content="icon.png">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <!-- Favicon (icon.png) -->
-  <link rel="icon" href="icon.png" sizes="192x192" type="image/png">
-
-  <!-- Link to CSS -->
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Phaser 3 -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-
-  <!-- Main game logic -->
   <script src="main.js" defer></script>
 </head>
 <body>
-  <!-- The actual game container -->
   <div id="gameContainer"></div>
 
-  <!-- Register service worker for offline PWA -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('Service Worker registered.'))
+        .then(() => console.log('Service Worker registered'))
         .catch(err => console.error('SW registration failed:', err));
     }
   </script>
-
-  <!-- Extended HTML content below the game -->
-  <section id="additionalContent">
-    <h1>Phaser 3 Runner – Extended Edition</h1>
-    <p>
-      Experience a robust, advanced endless runner game built entirely with Phaser 3 
-      and progressive web app technology. Enjoy offline play, dynamic multi-lane gameplay, 
-      obstacle dodging, coin collection, and more. This version has extensive HTML structure 
-      to showcase a well-implemented setup without any external placeholders.
-    </p>
-    <ul>
-      <li>100% shape-drawn visuals (no external images)</li>
-      <li>Offline playable (thanks to service workers)</li>
-      <li>Installable on mobile (web app manifest)</li>
-      <li>Swipe-based lane switching controls</li>
-    </ul>
-  </section>
-
-  <section id="fillerSection">
-    <article>
-      <header>
-        <h2>In-Depth Features</h2>
-      </header>
-      <p>
-        <strong>Parallax Backgrounds:</strong> The game draws multiple background 
-        layers with dynamic color transitions. <em>No placeholder images.</em>
-      </p>
-      <p>
-        <strong>Multi-Scene Architecture:</strong> The code includes distinct scenes 
-        for Boot, Menu, Gameplay, UI, and Game Over states.
-      </p>
-      <p>
-        <strong>High-Performance JavaScript:</strong> Phaser 3’s powerful rendering ensures 
-        smooth gameplay on desktop and mobile.
-      </p>
-    </article>
-  </section>
-
-  <footer>
-    <hr>
-    <p>© 2025 – Abdullatif. All rights reserved.</p>
-  </footer>
 </body>
 </html>
