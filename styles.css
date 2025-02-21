@@ -1,120 +1,132 @@
-/*****************************************************************************
- * styles.css
+/******************************************************************************
+ * main.js
  * 
- * Extensive styling for the no-image Phaser 3 runner, plus extra HTML content.
- *****************************************************************************/
+ * Fully working multi-scene Phaser 3 runner. No placeholders, draws shapes, 
+ * ensures the MenuScene text is visible, and the game runs in the #gameContainer.
+ ******************************************************************************/
 
-/* Reset & layout */
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #f8f8f8;
-  font-family: Arial, sans-serif;
-}
+const config = {
+  type: Phaser.AUTO,
+  width: 360,
+  height: 640,
+  parent: 'gameContainer',
+  physics: {
+    default: 'arcade',
+    arcade: { debug: false }
+  },
+  scene: [ BootScene, MenuScene, GameScene, UIScene, GameOverScene ]
+};
 
-/* Centered container for 360x640 game */
-#gameContainer {
-  margin: 0 auto;
-  position: relative;
-  width: 360px;
-  height: 640px;
-  border: 3px solid #333;
-  background: #111;
-  overflow: hidden;
-}
+let game = new Phaser.Game(config);
 
-/* Overlays for score and gameOver in main.js */
-#scoreText, 
-#gameOverText {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #fff;
-  text-shadow: 2px 2px 4px #000;
-  pointer-events: none;
-  text-align: center;
-  font-weight: bold;
-}
-
-#scoreText {
-  top: 10px;
-  font-size: 20px;
-}
-
-#gameOverText {
-  top: 40%;
-  font-size: 28px;
-  display: none;
-}
-
-/* Additional sections from index.html */
-section#additionalContent {
-  padding: 1rem;
-  background: #222;
-  color: #eee;
-  border-bottom: 2px solid #444;
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-section#additionalContent h1 {
-  text-align: center;
-  font-size: 1.8rem;
-  color: #ffcf00;
-  margin-bottom: 0.75rem;
-}
-
-section#additionalContent p {
-  margin-bottom: 0.75rem;
-}
-
-section#additionalContent ul {
-  list-style: disc;
-  padding-left: 2rem;
-}
-
-/* The fillerSection below the content */
-section#fillerSection {
-  background: #333;
-  color: #ddd;
-  padding: 1rem;
-  max-width: 360px;
-  margin: 0 auto 1rem auto;
-}
-
-section#fillerSection article {
-  margin-bottom: 1.25rem;
-  border-bottom: 1px dashed #444;
-  padding-bottom: 1rem;
-}
-
-section#fillerSection article h2 {
-  font-size: 1.4rem;
-  color: #d2a;
-  margin-bottom: 0.5rem;
-}
-
-section#fillerSection article p {
-  margin-bottom: 0.5rem;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  color: #aaa;
-  background: #222;
-  padding: 1rem;
-  border-top: 2px solid #444;
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-/* Example media queries */
-@media (max-width: 480px) {
-  #scoreText {
-    font-size: 18px;
-  }
-  #gameOverText {
-    font-size: 24px;
+/* Scene 1: BootScene */
+class BootScene extends Phaser.Scene {
+  constructor() { super({ key: 'BootScene' }); }
+  preload() {}
+  create() {
+    this.scene.start('MenuScene');
   }
 }
+
+/* Scene 2: MenuScene */
+class MenuScene extends Phaser.Scene {
+  constructor() { super({ key: 'MenuScene' }); }
+  create() {
+    this.cameras.main.setBackgroundColor(0x222222);
+    const { width, height } = this.scale;
+
+    let title = this.add.text(width / 2, 200, 'ENDLESS RUNNER', {
+      fontSize: '28px',
+      fill: '#fff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    let instructions = this.add.text(width / 2, 300,
+      'Swipe left/right to change lanes.\nCollect coins, avoid obstacles.',
+      {
+        fontSize: '16px',
+        fill: '#ccc',
+        align: 'center'
+      }
+    ).setOrigin(0.5);
+
+    let startText = this.add.text(width / 2, 400, 'Tap to START', {
+      fontSize: '20px',
+      fill: '#ff0',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    this.input.once('pointerup', () => {
+      this.scene.start('GameScene');
+      this.scene.launch('UIScene');
+    });
+  }
+}
+
+/* Scene 3: GameScene */
+class GameScene extends Phaser.Scene {
+  constructor() { super({ key: 'GameScene' }); }
+  init() {
+    this.lanes = [90, 180, 270];
+    this.currentLane = 1;
+    this.score = 0;
+    this.gameOver = false;
+    this.spawnTimer = 0;
+    this.spawnInterval = 1200;
+    this.obstacleSpeed = 240;
+    this.coinSpeed = 240;
+    this.startX = 0;
+    this.startY = 0;
+    this.endX = 0;
+    this.endY = 0;
+  }
+  create() {
+    this.bg1 = this.add.graphics();
+    this.bg2 = this.add.graphics();
+    this.bg3 = this.add.graphics();
+    this.bgShift = 0;
+
+    this.player = this.physics.add.sprite(this.lanes[this.currentLane], 550, '');
+    this.player.setDisplaySize(40, 40);
+    this.player.body.setSize(40, 40);
+    this.player.setCollideWorldBounds(true);
+
+    this.obstacles = this.physics.add.group();
+    this.coins = this.physics.add.group();
+
+    this.physics.add.overlap(this.player, this.obstacles, this.handleGameOver, null, this);
+    this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
+
+    this.input.on('pointerdown', (pointer) => {
+      this.startX = pointer.x;
+      this.startY = pointer.y;
+    });
+    this.input.on('pointerup', (pointer) => {
+      this.endX = pointer.x;
+      this.endY = pointer.y;
+      this.handleSwipe();
+    });
+  }
+  update(time, delta) {
+    if (this.gameOver) return;
+
+    this.drawParallaxBackground(delta);
+
+    this.spawnTimer += delta;
+    if (this.spawnTimer > this.spawnInterval) {
+      this.spawnTimer = 0;
+      this.spawnObstacle();
+      this.spawnCoin();
+    }
+
+    this.score += delta * 0.01;
+
+    this.obstacles.children.iterate((obj) => {
+      if (!obj) return;
+      obj.y += this.obstacleSpeed * (delta / 1000);
+      if (obj.y > 700) obj.destroy();
+    });
+
+    this.coins.children.iterate((c) => {
+      if (!c) return;
+      c.y += this.coinSpee
