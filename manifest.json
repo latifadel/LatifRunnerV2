@@ -1,7 +1,7 @@
 {
-  "name": "Phaser 3 Runner – Extended Edition",
-  "short_name": "RunnerPWA",
-  "description": "A fully working no-image runner built with Phaser 3, offline capable, and installable on mobile.",
+  "name": "Minimal Phaser Runner",
+  "short_name": "Runner",
+  "description": "A simple, no-image Phaser 3 endless runner with offline support.",
   "icons": [
     {
       "src": "icon.png",
