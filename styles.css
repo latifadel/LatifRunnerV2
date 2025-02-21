@@ -1,40 +1,37 @@
-/* Minimal CSS for a black game area and overlay text */
+/* Simple styling */
 body {
   margin: 0;
   padding: 0;
-  background: #000; /* or #f8f8f8, up to you */
-  font-family: Arial, sans-serif;
+  background: #222;
+  color: #fff;
+  font-family: sans-serif;
+  text-align: center;
 }
 
 #gameContainer {
   margin: 0 auto;
+  padding: 0;
   position: relative;
-  width: 360px;  /* match Phaser config */
-  height: 640px; /* match Phaser config */
+  width: 360px; /* Match the game width (in main.js config) */
+  height: 640px; /* Match the game height (in main.js config) */
   background: #000;
   border: 2px solid #333;
-  overflow: hidden;
-}
-
-#scoreText,
-#gameOverText {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #fff;
-  pointer-events: none;
-  text-align: center;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px #000;
 }
 
 #scoreText {
+  position: absolute;
   top: 10px;
-  font-size: 20px;
+  left: 10px;
+  font-size: 18px;
+  z-index: 10;
 }
 
 #gameOverText {
-  top: 40%;
-  font-size: 28px;
-  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  display: none; /* Only displayed when game over */
 }
