@@ -1,34 +1,29 @@
 /*****************************************************************************
  * styles.css
  * 
- * A large, well-implemented stylesheet for our PWA runner project. 
- * No placeholders—every rule, class, or property is real CSS. 
+ * Extensive styling for the no-image Phaser 3 runner, plus extra HTML content.
  *****************************************************************************/
 
-/* ==================================================
-   1) ESSENTIAL STYLES FOR GAME LAYOUT & UI OVERLAYS
-   ================================================== */
-
-/* Reset & basic layout */
+/* Reset & layout */
 html, body {
   margin: 0;
   padding: 0;
   background: #f8f8f8;
   font-family: Arial, sans-serif;
-  line-height: 1.5;
 }
 
+/* Centered container for 360x640 game */
 #gameContainer {
   margin: 0 auto;
   position: relative;
-  width: 360px;   /* Matches the Phaser config width */
-  height: 640px;  /* Matches the Phaser config height */
+  width: 360px;
+  height: 640px;
   border: 3px solid #333;
   background: #111;
   overflow: hidden;
 }
 
-/* Score & Game Over UI (DOM elements) */
+/* Overlays for score and gameOver in main.js */
 #scoreText, 
 #gameOverText {
   position: absolute;
@@ -52,16 +47,14 @@ html, body {
   display: none;
 }
 
-/* 
-  Additional styling for DOM elements introduced in index.html 
-  (sections, articles, h1, h2, h3, etc.) 
-*/
-
+/* Additional sections from index.html */
 section#additionalContent {
   padding: 1rem;
   background: #222;
   color: #eee;
   border-bottom: 2px solid #444;
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 section#additionalContent h1 {
@@ -80,16 +73,13 @@ section#additionalContent ul {
   padding-left: 2rem;
 }
 
-section#additionalContent ul li {
-  margin-bottom: 0.5rem;
-}
-
-/* Filler & extra sections used in index.html */
+/* The fillerSection below the content */
 section#fillerSection {
   background: #333;
   color: #ddd;
   padding: 1rem;
-  margin-bottom: 1rem;
+  max-width: 360px;
+  margin: 0 auto 1rem auto;
 }
 
 section#fillerSection article {
@@ -108,402 +98,23 @@ section#fillerSection article p {
   margin-bottom: 0.5rem;
 }
 
-section#fillerSection article dl {
-  margin: 0.5rem 0 1rem 2rem;
-}
-section#fillerSection article dt {
-  font-weight: bold;
-  margin-top: 0.5rem;
-}
-section#fillerSection article dd {
-  margin-left: 1rem;
-  margin-bottom: 0.25rem;
-  color: #9fc;
-}
-
-section#fillerSection article h2 + p strong {
-  color: #ff0;
-}
-
-/* Footer styling in index.html */
+/* Footer */
 footer {
   text-align: center;
   color: #aaa;
   background: #222;
   padding: 1rem;
-  margin-top: 1rem;
   border-top: 2px solid #444;
+  max-width: 360px;
+  margin: 0 auto;
 }
 
-/* Extended data sections from index.html */
-section h3 {
-  font-size: 1.2rem;
-  margin-bottom: 0.3rem;
-  color: #2fc;
-}
-section p {
-  margin-bottom: 0.75rem;
-}
-
-/* ==================================================
-   2) MEDIA QUERIES FOR RESPONSIVENESS 
-   ================================================== */
-
+/* Example media queries */
 @media (max-width: 480px) {
-  /* For very small screens, adapt font sizes slightly */
   #scoreText {
     font-size: 18px;
   }
   #gameOverText {
     font-size: 24px;
   }
-  section#additionalContent h1 {
-    font-size: 1.6rem;
-  }
 }
-
-@media (min-width: 768px) {
-  /* For tablets or larger screens, we can center the container, or widen. */
-  #gameContainer {
-    margin-top: 2rem;
-  }
-  section#additionalContent {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-  section#fillerSection {
-    max-width: 720px;
-    margin: 0 auto 1rem auto;
-  }
-}
-
-@media (min-width: 1024px) {
-  /* For desktop widths, we can do further expansions. */
-  #gameContainer {
-    margin-top: 3rem;
-    border-radius: 8px;
-  }
-  body {
-    line-height: 1.75;
-  }
-  footer {
-    font-size: 0.95rem;
-  }
-}
-
-/* ==================================================
-   3) CSS ANIMATIONS & TRANSITIONS 
-   ================================================== */
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes colorPulse {
-  0%   { background-color: #111; }
-  50%  { background-color: #444; }
-  100% { background-color: #111; }
-}
-
-.animated-fadeIn {
-  animation: fadeIn 0.5s ease-in-out forwards;
-}
-
-.animated-pulseBg {
-  animation: colorPulse 2s infinite;
-}
-
-.transition-all {
-  transition: all 0.3s ease;
-}
-
-/* ==================================================
-   4) FILLER CLASSES - ALL DO REAL STYLES, NO PLACEHOLDERS
-   ================================================== */
-
-.fillerClass001 {
-  color: #222;
-  background: #eee;
-  border: 1px solid #aaa;
-  padding: 5px;
-}
-.fillerClass002 {
-  color: #333;
-  background: #ccc;
-  border: 2px dashed #999;
-  margin: 10px;
-  font-style: italic;
-}
-.fillerClass003 {
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
-  display: inline-block;
-}
-.fillerClass004 {
-  width: 100px;
-  height: 50px;
-  background: linear-gradient(45deg, #f06, #0ff);
-}
-.fillerClass005 {
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #f60;
-  cursor: pointer;
-}
-.fillerClass006 {
-  margin: 1rem 2rem;
-  padding: 1rem;
-  background: #222;
-  color: #fff;
-  text-align: center;
-}
-.fillerClass007 {
-  opacity: 0.8;
-  font-weight: bold;
-  transition: background 0.3s ease;
-}
-.fillerClass007:hover {
-  background: #666;
-  color: #eee;
-}
-.fillerClass008 {
-  display: block;
-  width: 100%;
-  border-bottom: 2px solid #333;
-  margin-bottom: 1rem;
-}
-.fillerClass009 {
-  text-decoration: underline;
-  font-size: 0.9rem;
-  color: #9cf;
-}
-.fillerClass010 {
-  background: #363;
-  color: #cfc;
-  padding: 0.5rem;
-  border-radius: 8px;
-}
-
-/* More expansions... */
-.fillerClass011 { font-size: 0.85rem; color: #db3; }
-.fillerClass012 { font-size: 1rem; color: #3bd; }
-.fillerClass013 { font-size: 1.2rem; color: #f3b; }
-.fillerClass014 { font-size: 1.5rem; color: #fff; background: #000; }
-.fillerClass015 { border: 3px dotted #ff0; }
-.fillerClass016 { border: 4px double #f0f; }
-.fillerClass017 { border: 5px groove #0ff; }
-.fillerClass018 { border: 6px ridge #f00; }
-.fillerClass019 { transform: rotate(2deg); }
-.fillerClass020 { transform: scale(1.1); }
-
-/* Keep going to generate a long, valid, no-placeholder file */
-.fillerClass021 {
-  background-image: repeating-linear-gradient(90deg, #222, #333 10px, #444 20px);
-  color: #eee;
-  padding: 0.5rem;
-}
-.fillerClass022 {
-  border: 1px solid #222;
-  box-shadow: inset 0 0 5px #000;
-}
-.fillerClass023 {
-  float: left;
-  width: 50px;
-  height: 50px;
-  background: #ff0;
-}
-.fillerClass024 {
-  float: right;
-  width: 50px;
-  height: 50px;
-  background: #0ff;
-}
-.fillerClass025 {
-  clear: both;
-}
-.fillerClass026 {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.fillerClass027 {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 1rem;
-}
-.fillerClass028 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: #f66;
-  width: 100px;
-  height: 100px;
-}
-.fillerClass029 {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: #66f;
-  width: 100px;
-  height: 100px;
-}
-.fillerClass030 {
-  mix-blend-mode: multiply;
-}
-
-/* Continue to ensure we have many lines... */
-.fillerClass031 { background: #111; color: #fff; }
-.fillerClass032 { background: #222; color: #eee; }
-.fillerClass033 { background: #333; color: #ddd; }
-.fillerClass034 { background: #444; color: #ccc; }
-.fillerClass035 { background: #555; color: #bbb; }
-.fillerClass036 { background: #666; color: #aaa; }
-.fillerClass037 { background: #777; color: #999; }
-.fillerClass038 { background: #888; color: #888; }
-.fillerClass039 { background: #999; color: #777; }
-.fillerClass040 { background: #aaa; color: #666; }
-.fillerClass041 { background: #bbb; color: #555; }
-.fillerClass042 { background: #ccc; color: #444; }
-.fillerClass043 { background: #ddd; color: #333; }
-.fillerClass044 { background: #eee; color: #222; }
-.fillerClass045 { background: #fff; color: #000; }
-.fillerClass046 { background: #000; color: #fff; }
-
-/* Another set of expansions */
-.fillerClass047 { font-weight: 300; }
-.fillerClass048 { font-weight: 400; }
-.fillerClass049 { font-weight: 500; }
-.fillerClass050 { font-weight: 600; }
-.fillerClass051 { font-weight: 700; }
-.fillerClass052 { font-weight: 800; }
-.fillerClass053 { font-style: italic; }
-.fillerClass054 { font-style: normal; }
-.fillerClass055 { text-transform: lowercase; }
-.fillerClass056 { text-transform: capitalize; }
-.fillerClass057 { letter-spacing: 2px; }
-.fillerClass058 { letter-spacing: -1px; }
-.fillerClass059 { word-spacing: 10px; }
-.fillerClass060 { line-height: 2.0; }
-
-/* We'll add some advanced pseudo-class usage */
-.fillerClass061:hover {
-  color: #f33;
-  background: #333;
-}
-.fillerClass061:active {
-  color: #fff;
-  background: #f33;
-}
-.fillerClass062:focus {
-  outline: 2px solid #0f0;
-}
-.fillerClass063 input[type="text"] {
-  width: 200px;
-  border: 1px solid #ccc;
-  padding: 5px;
-}
-.fillerClass063 input[type="text"]:focus {
-  border-color: #f0f;
-  background: #222;
-  color: #fff;
-}
-
-/* Animations expansions (not placeholders). */
-@keyframes spin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-.fillerClass064 {
-  animation: spin 2s linear infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.fillerClass065 {
-  display: inline-block;
-  animation: bounce 1s ease infinite;
-}
-
-/* More expansions (well beyond 100 lines) */
-.fillerClass066 {
-  background: repeating-linear-gradient(
-    45deg,
-    #000,
-    #000 10px,
-    #333 10px,
-    #333 20px
-  );
-}
-.fillerClass067 { background: #111 url('data:image/gif;base64,R0lGODlhAQABAIAAAAUEBA==') repeat; }
-.fillerClass068 { border: 1px solid #454545; }
-.fillerClass069 { margin: 2rem auto; width: 80%; }
-.fillerClass070 { border-left: 5px solid #f00; padding-left: 1rem; }
-
-/* Could keep going to 200+ lines. We'll add more. */
-.fillerClass071 { border-right: 5px solid #0f0; padding-right: 1rem; }
-.fillerClass072 { border-top: 5px solid #00f; padding-top: 1rem; }
-.fillerClass073 { border-bottom: 5px solid #ff0; padding-bottom: 1rem; }
-.fillerClass074 { display: inline-flex; align-items: center; justify-content: space-between; }
-.fillerClass075 { flex-direction: column; }
-.fillerClass076 { flex-direction: row; }
-.fillerClass077 { z-index: 999; }
-.fillerClass078 { z-index: 1000; }
-.fillerClass079 { position: fixed; bottom: 0; background: #222; width: 100%; }
-.fillerClass080 { overflow: scroll; max-height: 100px; }
-.fillerClass081 { overflow: hidden; }
-
-/* Even more expansions to push total lines further */
-.fillerClass082 { outline: 2px dashed #f0f; }
-.fillerClass083 { outline: 3px ridge #0ff; }
-.fillerClass084 { clip-path: circle(50% at center); }
-.fillerClass085 { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-.fillerClass086 { writing-mode: vertical-rl; }
-.fillerClass087 { writing-mode: vertical-lr; }
-.fillerClass088 { transform: skewX(15deg); }
-.fillerClass089 { transform: skewY(15deg); }
-.fillerClass090 { filter: grayscale(100%); }
-.fillerClass091 { filter: sepia(80%); }
-.fillerClass092 { filter: blur(2px); }
-.fillerClass093 { backdrop-filter: blur(5px); }
-.fillerClass094 { border-image: linear-gradient(to right, #f00, #0f0) 1; }
-.fillerClass095 { pointer-events: none; }
-.fillerClass096 { user-select: none; }
-.fillerClass097 { font-variant: small-caps; }
-.fillerClass098 { font-variant: all-small-caps; }
-.fillerClass099 { direction: rtl; }
-.fillerClass100 { direction: ltr; }
-
-/* We’re already at 100 filler classes. Let's keep going for more lines. */
-
-.fillerClass101 { position: sticky; top: 0; background: #666; }
-.fillerClass102 { float: left; clear: none; }
-.fillerClass103 { float: right; clear: none; }
-.fillerClass104 { margin: auto; display: table; }
-.fillerClass105 { cursor: crosshair; }
-.fillerClass106 { cursor: zoom-in; }
-.fillerClass107 { cursor: wait; }
-.fillerClass108 { cursor: progress; }
-.fillerClass109 { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100px; display: block; }
-.fillerClass110 { border-spacing: 0; border-collapse: collapse; }
-.fillerClass111 { vertical-align: top; }
-.fillerClass112 { vertical-align: middle; }
-.fillerClass113 { vertical-align: bottom; }
-.fillerClass114 { justify-content: flex-start; }
-.fillerClass115 { justify-content: flex-end; }
-.fillerClass116 { transition: opacity 0.5s ease; }
-.fillerClass116:hover { opacity: 0.5; }
-.fillerClass117 { transition: transform 0.5s ease; }
-.fillerClass117:hover { transform: translateX(10px); }
-.fillerClass118 { border: 10px solid #000; box-sizing: border-box; }
-.fillerClass119 { box-sizing: content-box; }
-.fillerClass120 { outline-offset: 5px; }
-
-/* Enough expansions to ensure a big CSS file. 
-   We can stop here, or keep going beyond 200 lines 
-   to meet your “extremely long” requirement. */
