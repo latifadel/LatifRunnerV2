@@ -1,0 +1,37 @@
+/* Simple styling */
+body {
+  margin: 0;
+  padding: 0;
+  background: #222;
+  color: #fff;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#gameContainer {
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  width: 360px; /* Match the game width (in main.js config) */
+  height: 640px; /* Match the game height (in main.js config) */
+  background: #000;
+  border: 2px solid #333;
+}
+
+#scoreText {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 18px;
+  z-index: 10;
+}
+
+#gameOverText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  display: none; /* Only displayed when game over */
+}
