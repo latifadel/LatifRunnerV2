@@ -1,7 +1,7 @@
 {
-  "name": "Extensive No-Image Runner",
-  "short_name": "NoImgRunner",
-  "description": "A massive, well-implemented Phaser 3 runner game, fully offline-capable, with no placeholders.",
+  "name": "Phaser 3 Runner – Extended Edition",
+  "short_name": "RunnerPWA",
+  "description": "A fully working no-image runner built with Phaser 3, offline capable, and installable on mobile.",
   "icons": [
     {
       "src": "icon.png",
