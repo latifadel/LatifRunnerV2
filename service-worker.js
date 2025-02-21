@@ -1,49 +1,28 @@
-// service-worker.js
-const CACHE_NAME = 'phaser-runner-v2';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'phaser-runner-v3';
+const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './main.js',
   './service-worker.js',
   './manifest.json',
-  './icon.png', // Replace with your app icon(s)
+  './icon.png',
   'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js',
-  // Also add any externally loaded images used in the game
-  'https://i.imgur.com/INxP3EJ.png',
-  'https://i.imgur.com/i6p72Rf.png',
-  'https://i.imgur.com/I1qBc1y.png',
-  'https://i.imgur.com/sJE2fEd.png'
+  'https://i.imgur.com/LPhWM85.png',
+  'https://i.imgur.com/XNCKB6a.png',
+  'https://i.imgur.com/RqZ7M3a.png',
+  'https://i.imgur.com/PknkWvS.png'
 ];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
   self.skipWaiting();
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.map(k => { if (k !== CACHE_NAME) return caches.delete(k); })
+  )));
   self.clients.claim();
 });
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request).catch(() => response);
-    })
-  );
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => r)));
 });
