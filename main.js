@@ -232,3 +232,36 @@ class UIScene extends Phaser.Scene {
   constructor() { super({ key: 'UIScene' }); }
   create() {
     this.gameScene = this.scene.get('GameScene');
+
+    this.scoreText = document.createElement('div');
+    this.scoreText.id = 'scoreText';
+    this.scoreText.innerText = 'Score: 0';
+    document.getElementById('gameContainer').appendChild(this.scoreText);
+  }
+  update() {
+    if (this.gameScene && !this.gameScene.gameOver) {
+      this.scoreText.innerText = 'Score: ' + Math.floor(this.gameScene.score);
+    }
+  }
+}
+
+/* Scene 5: GameOverScene */
+class GameOverScene extends Phaser.Scene {
+  constructor() { super({ key: 'GameOverScene' }); }
+  init(data) { this.finalScore = data.finalScore || 0; }
+  create() {
+    let oldScore = document.getElementById('scoreText');
+    if (oldScore) oldScore.remove();
+
+    this.gameOverText = document.createElement('div');
+    this.gameOverText.id = 'gameOverText';
+    this.gameOverText.innerHTML = `GAME OVER<br>Score: ${Math.floor(this.finalScore)}<br><small>Tap to Restart</small>`;
+    document.getElementById('gameContainer').appendChild(this.gameOverText);
+
+    this.input.once('pointerup', () => {
+      this.gameOverText.remove();
+      this.scene.start('GameScene');
+      this.scene.start('UIScene');
+    });
+  }
+}
