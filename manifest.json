@@ -1,7 +1,7 @@
 {
-  "name": "Massive No-Image Runner",
+  "name": "Extensive No-Image Runner",
   "short_name": "NoImgRunner",
-  "description": "An extremely large, stylish Phaser 3 runner that uses no external images.",
+  "description": "A massive, well-implemented Phaser 3 runner game, fully offline-capable, with no placeholders.",
   "icons": [
     {
       "src": "icon.png",
@@ -15,6 +15,7 @@
     }
   ],
   "start_url": "./index.html",
+  "scope": "./",
   "background_color": "#000000",
   "theme_color": "#000000",
   "display": "standalone",
