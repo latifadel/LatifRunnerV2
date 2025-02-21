@@ -1,5 +1,12 @@
-// main.js - Single file with all game logic
-// Basic endless runner with 3-lane swipe controls.
+/* 
+  main.js
+  A Subway Surfer–style endless runner with:
+  - Animated player
+  - Scrolling background
+  - Obstacles & coins
+  - Swipe controls
+  - Score system 
+*/
 
 const config = {
   type: Phaser.AUTO,
@@ -13,60 +20,98 @@ const config = {
     }
   },
   scene: {
-    preload: preload,
-    create: create,
-    update: update
+    preload,
+    create,
+    update
   }
 };
 
 let game = new Phaser.Game(config);
 
-function preload() {
-  // Load any images or sprites here (Placeholder rectangles)
-  this.load.image('player', 'https://via.placeholder.com/50/ff0000/ffffff?text=P'); 
-  this.load.image('obstacle', 'https://via.placeholder.com/50/0000ff/ffffff?text=O');
-}
-
+// Game variables
+let background;
 let player;
 let lanes = [90, 180, 270]; // X positions for 3 lanes
-let currentLane = 1;        // Start in the middle lane
+let currentLane = 1;        // Start in the middle
 let obstacles;
-let obstacleSpeed = 200;
-let spawnTimer = 0;
-let spawnInterval = 1500;   // Milliseconds
+let coins;
 let score = 0;
 let scoreText;
 let gameOverText;
 let gameOver = false;
+let spawnTimer = 0;
+let spawnInterval = 1200;   // ms
+let obstacleSpeed = 240;
+let coinSpeed = 240;
 
-// Variables for swipe detection
-let startX, startY, endX, endY;
-const SWIPE_THRESHOLD = 50;
+// Swipe detection
+let startX, startY;
+let endX, endY;
+const SWIPE_THRESHOLD = 50; // Minimum distance for swipe
+
+function preload() {
+  /* 
+    Replace these placeholder URLs with your own:
+    - 'player_run' is a sprite sheet with frames for running animation
+    - 'bg' is a background image that we can tile
+    - 'obstacle' and 'coin' are example placeholders
+  */
+  
+  // Background
+  this.load.image('bg', 'https://i.imgur.com/INxP3EJ.png');
+
+  // Player running sprite sheet (8 frames horizontally for example)
+  this.load.spritesheet('player_run', 
+    'https://i.imgur.com/i6p72Rf.png',
+    { frameWidth: 48, frameHeight: 48 } 
+  );
+
+  // Obstacles / Coins
+  this.load.image('obstacle', 'https://i.imgur.com/I1qBc1y.png');
+  this.load.image('coin', 'https://i.imgur.com/sJE2fEd.png');
+}
 
 function create() {
-  // Player
-  player = this.physics.add.sprite(lanes[currentLane], 550, 'player');
+  // Scrolling background (tile sprite)
+  background = this.add.tileSprite(0, 0, config.width, config.height, 'bg');
+  background.setOrigin(0, 0); // Top-left corner
+  background.setScrollFactor(0); // so it doesn't move with camera
+
+  // Player setup
+  player = this.physics.add.sprite(lanes[currentLane], 550, 'player_run');
   player.setCollideWorldBounds(true);
+  player.setScale(1.2);
 
-  // Group for obstacles
+  // Create the running animation from the sprite sheet
+  this.anims.create({
+    key: 'run',
+    frames: this.anims.generateFrameNumbers('player_run', { start: 0, end: 7 }),
+    frameRate: 12,
+    repeat: -1
+  });
+  player.play('run');
+
+  // Groups
   obstacles = this.physics.add.group();
+  coins = this.physics.add.group();
 
-  // Score
+  // Overlaps
+  this.physics.add.overlap(player, obstacles, handleGameOver, null, this);
+  this.physics.add.overlap(player, coins, collectCoin, null, this);
+
+  // Score text
   scoreText = document.createElement('div');
   scoreText.id = 'scoreText';
   scoreText.innerHTML = 'Score: 0';
   document.getElementById('gameContainer').appendChild(scoreText);
 
-  // Game Over Text
+  // Game Over text
   gameOverText = document.createElement('div');
   gameOverText.id = 'gameOverText';
-  gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
+  gameOverText.innerHTML = 'GAME OVER<br><small>Tap to restart</small>';
   document.getElementById('gameContainer').appendChild(gameOverText);
 
-  // Collision detection
-  this.physics.add.overlap(player, obstacles, handleGameOver, null, this);
-
-  // Input events for swiping
+  // Swipe input
   this.input.on('pointerdown', (pointer) => {
     startX = pointer.x;
     startY = pointer.y;
@@ -75,84 +120,121 @@ function create() {
   this.input.on('pointerup', (pointer) => {
     endX = pointer.x;
     endY = pointer.y;
-    handleSwipe(this);
-  });
-
-  // Tap to restart
-  this.input.on('pointerup', () => {
-    if(gameOver) {
-      restartGame(this);
+    handleSwipe();
+    if (gameOver) {
+      restartGame();
     }
   });
 }
 
 function update(time, delta) {
-  if(gameOver) return;
+  if (gameOver) return;
 
-  // Spawn obstacles on a timer
+  // Scroll background downward to simulate movement
+  background.tilePositionY -= 2; // adjust speed as needed
+
+  // Spawn obstacles & coins
   spawnTimer += delta;
   if (spawnTimer > spawnInterval) {
     spawnTimer = 0;
     spawnObstacle(this);
+    spawnCoin(this); // optional
   }
 
   // Increase score over time
-  score += delta * 0.01;
+  score += delta * 0.01; // adjust rate
   scoreText.innerHTML = 'Score: ' + Math.floor(score);
 
-  // Move obstacles down
-  obstacles.children.iterate((obstacle) => {
-    if (obstacle) {
-      obstacle.y += obstacleSpeed * (delta / 1000);
-      if (obstacle.y > 700) {
-        obstacle.destroy();
+  // Move obstacles and coins downward
+  obstacles.children.iterate((obj) => {
+    if (obj) {
+      obj.y += obstacleSpeed * (delta / 1000);
+      if (obj.y > config.height + 100) {
+        obj.destroy();
+      }
+    }
+  });
+  coins.children.iterate((coin) => {
+    if (coin) {
+      coin.y += coinSpeed * (delta / 1000);
+      if (coin.y > config.height + 50) {
+        coin.destroy();
       }
     }
   });
 }
 
-function handleSwipe(scene) {
+// Handle swipe input
+function handleSwipe() {
   let distX = endX - startX;
   let distY = endY - startY;
 
-  // If horizontal swipe is greater than vertical swipe
-  if(Math.abs(distX) > Math.abs(distY)) {
-    // Swipe left
-    if(distX < -SWIPE_THRESHOLD && currentLane > 0) {
+  if (Math.abs(distX) > Math.abs(distY)) {
+    // Horizontal swipe
+    if (distX < -SWIPE_THRESHOLD && currentLane > 0) {
+      // swipe left
       currentLane--;
       player.x = lanes[currentLane];
-    }
-    // Swipe right
-    else if(distX > SWIPE_THRESHOLD && currentLane < lanes.length - 1) {
+    } else if (distX > SWIPE_THRESHOLD && currentLane < lanes.length - 1) {
+      // swipe right
       currentLane++;
       player.x = lanes[currentLane];
     }
+  } else {
+    // Vertical swipe (if you want a jump or slide mechanic, handle here)
+    if (distY < -SWIPE_THRESHOLD) {
+      // swipe up -> jump logic if desired
+      // e.g.: player.setVelocityY(-500);
+    } else if (distY > SWIPE_THRESHOLD) {
+      // swipe down -> slide logic if desired
+      // e.g.: crouch mechanic
+    }
   }
-  // If vertical swipe is used, you can add jump logic or ignore it.
-  // For now, no vertical move.
 }
 
+// Spawning obstacles
 function spawnObstacle(scene) {
-  // Randomly choose a lane
   let laneIndex = Phaser.Math.Between(0, lanes.length - 1);
   let xPos = lanes[laneIndex];
-  // Obstacle at top of the screen
   let obstacle = scene.physics.add.sprite(xPos, -50, 'obstacle');
+  obstacle.setScale(1);
   obstacles.add(obstacle);
 }
 
+// Spawning coins
+function spawnCoin(scene) {
+  // 50% chance of a coin spawn
+  if (Math.random() < 0.5) {
+    let laneIndex = Phaser.Math.Between(0, lanes.length - 1);
+    let xPos = lanes[laneIndex];
+    let coin = scene.physics.add.sprite(xPos, -150, 'coin');
+    coin.setScale(0.7);
+    coins.add(coin);
+  }
+}
+
+// Collect coin
+function collectCoin(player, coin) {
+  coin.destroy();
+  score += 10; // bonus for coin
+}
+
+// Game Over
 function handleGameOver() {
   gameOver = true;
   gameOverText.style.display = 'block';
 }
 
-function restartGame(scene) {
-  // Reset values
+// Restart
+function restartGame() {
+  // Reset
+  gameOver = false;
+  gameOverText.style.display = 'none';
   score = 0;
   currentLane = 1;
   player.x = lanes[currentLane];
-  obstacles.clear(true, true);
-  gameOver = false;
-  gameOverText.style.display = 'none';
-}
 
+  // Clear obstacles & coins
+  obstacles.clear(true, true);
+  coins.clear(true, true);
+}
