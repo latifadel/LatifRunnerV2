@@ -1,5 +1,5 @@
-// main.js - Single file with all game logic
-// Basic endless runner with 3-lane swipe controls.
+// main.js - Latif Runner
+// Updated with a scrolling background and refined styling.
 
 const config = {
   type: Phaser.AUTO,
@@ -21,19 +21,14 @@ const config = {
 
 let game = new Phaser.Game(config);
 
-function preload() {
-  // Load any images or sprites here (Placeholder rectangles)
-  this.load.image('player', 'https://via.placeholder.com/50/ff0000/ffffff?text=P'); 
-  this.load.image('obstacle', 'https://via.placeholder.com/50/0000ff/ffffff?text=O');
-}
-
+// Game variables
 let player;
 let lanes = [90, 180, 270]; // X positions for 3 lanes
 let currentLane = 1;        // Start in the middle lane
 let obstacles;
-let obstacleSpeed = 200;
+let obstacleSpeed = 250;
 let spawnTimer = 0;
-let spawnInterval = 1500;   // Milliseconds
+let spawnInterval = 1200;   // Milliseconds
 let score = 0;
 let scoreText;
 let gameOverText;
@@ -43,7 +38,24 @@ let gameOver = false;
 let startX, startY, endX, endY;
 const SWIPE_THRESHOLD = 50;
 
+// Scrolling background
+let bg;
+
+function preload() {
+  // Load images/sprites (placeholder rectangles + background)
+  this.load.image('player', 'https://via.placeholder.com/50/ff0000/ffffff?text=P');
+  this.load.image('obstacle', 'https://via.placeholder.com/50/0000ff/ffffff?text=O');
+  
+  // A simple gradient background placeholder (feel free to change with your own)
+  // This is a small gradient image repeated as a tileSprite
+  this.load.image('bg', 'https://via.placeholder.com/360x640/333333/ffffff?text=+');
+}
+
 function create() {
+  // Create a scrolling background tile sprite
+  bg = this.add.tileSprite(0, 0, config.width, config.height, 'bg');
+  bg.setOrigin(0);
+
   // Player
   player = this.physics.add.sprite(lanes[currentLane], 550, 'player');
   player.setCollideWorldBounds(true);
@@ -51,13 +63,13 @@ function create() {
   // Group for obstacles
   obstacles = this.physics.add.group();
 
-  // Score
+  // Score (DOM Element overlay)
   scoreText = document.createElement('div');
   scoreText.id = 'scoreText';
   scoreText.innerHTML = 'Score: 0';
   document.getElementById('gameContainer').appendChild(scoreText);
 
-  // Game Over Text
+  // Game Over Text (DOM Element overlay)
   gameOverText = document.createElement('div');
   gameOverText.id = 'gameOverText';
   gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
@@ -66,7 +78,7 @@ function create() {
   // Collision detection
   this.physics.add.overlap(player, obstacles, handleGameOver, null, this);
 
-  // Input events for swiping
+  // Pointer input events for swiping
   this.input.on('pointerdown', (pointer) => {
     startX = pointer.x;
     startY = pointer.y;
@@ -76,18 +88,19 @@ function create() {
     endX = pointer.x;
     endY = pointer.y;
     handleSwipe(this);
-  });
 
-  // Tap to restart
-  this.input.on('pointerup', () => {
-    if(gameOver) {
+    // Also handle tap-to-restart if the game is over
+    if (gameOver) {
       restartGame(this);
     }
   });
 }
 
 function update(time, delta) {
-  if(gameOver) return;
+  if (gameOver) return;
+
+  // Scroll the background downward to create a sense of movement
+  bg.tilePositionY += 0.5;
 
   // Spawn obstacles on a timer
   spawnTimer += delta;
@@ -116,26 +129,25 @@ function handleSwipe(scene) {
   let distY = endY - startY;
 
   // If horizontal swipe is greater than vertical swipe
-  if(Math.abs(distX) > Math.abs(distY)) {
+  if (Math.abs(distX) > Math.abs(distY)) {
     // Swipe left
-    if(distX < -SWIPE_THRESHOLD && currentLane > 0) {
+    if (distX < -SWIPE_THRESHOLD && currentLane > 0) {
       currentLane--;
       player.x = lanes[currentLane];
     }
     // Swipe right
-    else if(distX > SWIPE_THRESHOLD && currentLane < lanes.length - 1) {
+    else if (distX > SWIPE_THRESHOLD && currentLane < lanes.length - 1) {
       currentLane++;
       player.x = lanes[currentLane];
     }
   }
-  // If vertical swipe is used, you can add jump logic or ignore it.
-  // For now, no vertical move.
 }
 
 function spawnObstacle(scene) {
   // Randomly choose a lane
   let laneIndex = Phaser.Math.Between(0, lanes.length - 1);
   let xPos = lanes[laneIndex];
+  
   // Obstacle at top of the screen
   let obstacle = scene.physics.add.sprite(xPos, -50, 'obstacle');
   obstacles.add(obstacle);
@@ -155,4 +167,3 @@ function restartGame(scene) {
   gameOver = false;
   gameOverText.style.display = 'none';
 }
-
