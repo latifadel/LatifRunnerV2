@@ -1,7 +1,7 @@
 {
-  "name": "Phaser Endless Runner",
-  "short_name": "EndlessRunner",
-  "description": "A simple Phaser 3 endless runner PWA.",
+  "name": "Latif Runner",
+  "short_name": "LatifRun",
+  "description": "A stylish Phaser 3 runner game as a PWA.",
   "icons": [
     {
       "src": "icon.png",
