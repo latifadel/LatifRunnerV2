@@ -1,36 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Phaser 3 Subway Surfer-Style Runner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <!-- iOS installable app config -->
+  <meta charset="UTF-8">
+  <title>Phaser 3 Runner PWA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- Web App Manifest -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon.png" />
-
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="styles.css" />
-
-  <!-- Phaser 3 (CDN) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-
-  <!-- Main Game Logic -->
   <script src="main.js" defer></script>
 </head>
 <body>
   <div id="gameContainer"></div>
-
-  <!-- Register Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log('Service Worker registered.'))
-        .catch(error => console.log('Service Worker registration failed:', error));
+        .catch(e => console.error('SW registration failed:', e));
     }
   </script>
 </body>
