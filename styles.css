@@ -2,9 +2,9 @@
 body {
   margin: 0;
   padding: 0;
-  background: #141414;
+  background: #1b1b1b;
   font-family: 'Roboto', sans-serif;
-  color: #fff;
+  color: #ffffff;
   text-align: center;
   user-select: none; /* Prevent text selection on mobile */
 }
@@ -16,10 +16,10 @@ body {
   width: 360px; /* Match the game width */
   height: 640px; /* Match the game height */
   background: #000; /* Fallback background */
-  border: 2px solid #444;
+  border: 2px solid #333;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0,0,0,0.7);
-  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  border-radius: 8px;
 }
 
 /* Score text */
@@ -27,11 +27,11 @@ body {
   position: absolute;
   top: 10px;
   left: 10px;
-  padding: 4px 8px;
+  padding: 6px 12px;
   font-size: 18px;
-  background-color: rgba(0,0,0,0.4);
-  border: 1px solid #fff;
-  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #ffffff;
+  border-radius: 6px;
   z-index: 10;
 }
 
@@ -57,7 +57,7 @@ body {
 
 #gameOverText small {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 10px;
-  opacity: 0.8;
+  opacity: 0.9;
 }
