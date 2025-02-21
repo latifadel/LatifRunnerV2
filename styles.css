@@ -1,39 +1,31 @@
-/*****************************************************************************
- * styles.css
- * 
- * Extensive styling for the no-image Phaser 3 runner, plus extra HTML content.
- *****************************************************************************/
-
-/* Reset & layout */
-html, body {
+/* Minimal CSS for a black game area and overlay text */
+body {
   margin: 0;
   padding: 0;
-  background: #f8f8f8;
+  background: #000; /* or #f8f8f8, up to you */
   font-family: Arial, sans-serif;
 }
 
-/* Centered container for 360x640 game */
 #gameContainer {
   margin: 0 auto;
   position: relative;
-  width: 360px;
-  height: 640px;
-  border: 3px solid #333;
-  background: #111;
+  width: 360px;  /* match Phaser config */
+  height: 640px; /* match Phaser config */
+  background: #000;
+  border: 2px solid #333;
   overflow: hidden;
 }
 
-/* Overlays for score and gameOver in main.js */
-#scoreText, 
+#scoreText,
 #gameOverText {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   color: #fff;
-  text-shadow: 2px 2px 4px #000;
   pointer-events: none;
   text-align: center;
   font-weight: bold;
+  text-shadow: 1px 1px 2px #000;
 }
 
 #scoreText {
@@ -45,76 +37,4 @@ html, body {
   top: 40%;
   font-size: 28px;
   display: none;
-}
-
-/* Additional sections from index.html */
-section#additionalContent {
-  padding: 1rem;
-  background: #222;
-  color: #eee;
-  border-bottom: 2px solid #444;
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-section#additionalContent h1 {
-  text-align: center;
-  font-size: 1.8rem;
-  color: #ffcf00;
-  margin-bottom: 0.75rem;
-}
-
-section#additionalContent p {
-  margin-bottom: 0.75rem;
-}
-
-section#additionalContent ul {
-  list-style: disc;
-  padding-left: 2rem;
-}
-
-/* The fillerSection below the content */
-section#fillerSection {
-  background: #333;
-  color: #ddd;
-  padding: 1rem;
-  max-width: 360px;
-  margin: 0 auto 1rem auto;
-}
-
-section#fillerSection article {
-  margin-bottom: 1.25rem;
-  border-bottom: 1px dashed #444;
-  padding-bottom: 1rem;
-}
-
-section#fillerSection article h2 {
-  font-size: 1.4rem;
-  color: #d2a;
-  margin-bottom: 0.5rem;
-}
-
-section#fillerSection article p {
-  margin-bottom: 0.5rem;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  color: #aaa;
-  background: #222;
-  padding: 1rem;
-  border-top: 2px solid #444;
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-/* Example media queries */
-@media (max-width: 480px) {
-  #scoreText {
-    font-size: 18px;
-  }
-  #gameOverText {
-    font-size: 24px;
-  }
 }
