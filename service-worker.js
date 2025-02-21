@@ -1,5 +1,5 @@
-// service-worker.js - Simple caching for offline support
-const CACHE_NAME = 'phaser-endless-runner-v1';
+// service-worker.js
+const CACHE_NAME = 'phaser-runner-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,11 +7,15 @@ const ASSETS_TO_CACHE = [
   './main.js',
   './service-worker.js',
   './manifest.json',
-  './icon.png', // Your PWA icon
-  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js'
+  './icon.png', // Replace with your app icon(s)
+  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js',
+  // Also add any externally loaded images used in the game
+  'https://i.imgur.com/INxP3EJ.png',
+  'https://i.imgur.com/i6p72Rf.png',
+  'https://i.imgur.com/I1qBc1y.png',
+  'https://i.imgur.com/sJE2fEd.png'
 ];
 
-// Install event - cache necessary files
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -21,7 +25,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -37,14 +40,10 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve cached content if offline
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).catch(() => cachedResponse);
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request).catch(() => response);
     })
   );
 });
