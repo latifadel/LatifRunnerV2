@@ -2,23 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Phaser 3 Runner PWA</title>
+  <title>Ultra-Long Phaser 3 Runner PWA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Phaser 3 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+  <!-- Main Game Logic -->
   <script src="main.js" defer></script>
 </head>
 <body>
+  <!-- Container for the Phaser Game -->
   <div id="gameContainer"></div>
+
+  <!-- Register the Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log('Service Worker registered.'))
-        .catch(e => console.error('SW registration failed:', e));
+        .catch(err => console.error('Service Worker registration failed:', err));
     }
   </script>
 </body>
