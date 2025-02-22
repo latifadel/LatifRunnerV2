@@ -1,4 +1,4 @@
-// main.js - Latif Runner with local assets
+// main.js - Latif Runner referencing local images
 
 const config = {
   type: Phaser.AUTO,
@@ -11,7 +11,7 @@ const config = {
       debug: false
     }
   },
-  scene: [MainScene]
+  scene: [MainScene] // We define the scene below
 };
 
 let game = new Phaser.Game(config);
@@ -22,43 +22,47 @@ class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load local assets from your "assets" folder
-    // Road tile background
+    // -- ROAD TILE (Scrolling Background) --
+    // Replace "road_tile.png" with your file’s exact name if it differs
     this.load.image('road', 'assets/road_tile.png');
 
-    // Car spritesheet (if you have multiple frames)
-    // Adjust frameWidth & frameHeight to match car_spritesheet.png
+    // -- CAR SPRITE OR SPRITESHEET --
+    // If your car image is just a single frame (like green_car.png), use:
+    // this.load.image('car', 'assets/green_car.png');
+    //
+    // If you have a multi-frame car_spritesheet.png (like the one with 16 frames),
+    // then use:
     this.load.spritesheet('car', 'assets/car_spritesheet.png', {
-      frameWidth: 64,
-      frameHeight: 128
+      frameWidth: 64,   // adjust to match each frame
+      frameHeight: 64   // adjust to match each frame
     });
 
-    // Different obstacles
+    // -- OBSTACLES (Traffic Cone, Other Cars) --
     this.load.image('obstacle_cone', 'assets/obstacle_cone.png');
     this.load.image('obstacle_car1', 'assets/obstacle_car1.png');
     this.load.image('obstacle_car2', 'assets/obstacle_car2.png');
 
-    // Spark image for collision particle effect
+    // -- SPARK EFFECT (For collision particles) --
     this.load.image('spark', 'assets/spark.png');
 
-    // Audio (music & SFX)
-    this.load.audio('bgm', 'assets/bgm.ogg');
-    this.load.audio('crash', 'assets/crash.wav');
+    // (Optional) AUDIO FILES
+    // e.g. this.load.audio('bgm', 'assets/bgm.ogg');
+    // e.g. this.load.audio('crash', 'assets/crash.wav');
   }
 
   create() {
-    // Lanes and initial state
+    // -- BASIC STATE / SETTINGS --
     this.lanes = [90, 180, 270];
     this.currentLane = 1;
     this.score = 0;
     this.gameOver = false;
 
-    // Scrolling background
+    // -- SCROLLING ROAD --
     this.road = this.add.tileSprite(0, 0, 360, 640, 'road');
     this.road.setOrigin(0);
 
-    // Create an animation from the car spritesheet
-    // Adjust frames if you have more or fewer frames
+    // If using a spritesheet for the car with multiple frames:
+    // (Adjust frame range as needed for the actual # of frames)
     this.anims.create({
       key: 'drive',
       frames: this.anims.generateFrameNumbers('car', { start: 0, end: 1 }),
@@ -66,18 +70,20 @@ class MainScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Player car
+    // -- PLAYER CAR --
     this.player = this.physics.add.sprite(this.lanes[this.currentLane], 550, 'car');
     this.player.setCollideWorldBounds(true);
-    this.player.play('drive'); // Play the 'drive' animation
 
-    // Obstacle group
+    // If you have an animation, play it:
+    this.player.play('drive');
+
+    // -- OBSTACLES GROUP --
     this.obstacles = this.physics.add.group();
 
     // Overlap collision
     this.physics.add.overlap(this.player, this.obstacles, this.handleCollision, null, this);
 
-    // Spark particle emitter (collision effect)
+    // -- SPARK PARTICLE EMITTER --
     this.sparkParticles = this.add.particles('spark');
     this.sparkEmitter = this.sparkParticles.createEmitter({
       x: -100,
@@ -90,7 +96,7 @@ class MainScene extends Phaser.Scene {
       on: false
     });
 
-    // DOM Elements for UI
+    // -- DOM ELEMENTS (Score & Game Over) --
     this.scoreText = document.createElement('div');
     this.scoreText.id = 'scoreText';
     this.scoreText.innerHTML = 'Score: 0';
@@ -101,7 +107,7 @@ class MainScene extends Phaser.Scene {
     this.gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
     document.getElementById('gameContainer').appendChild(this.gameOverText);
 
-    // Input (pointer) for swiping
+    // -- SWIPE INPUT --
     this.input.on('pointerdown', (pointer) => {
       this.startX = pointer.x;
       this.startY = pointer.y;
@@ -111,39 +117,37 @@ class MainScene extends Phaser.Scene {
       this.endX = pointer.x;
       this.endY = pointer.y;
       this.handleSwipe();
-
       if (this.gameOver) this.restartGame();
     });
 
-    // Spawn logic
+    // -- OBSTACLE TIMING --
     this.obstacleSpeed = 250;
     this.spawnTimer = 0;
     this.spawnInterval = 1200;
 
-    // Play audio
-    this.bgm = this.sound.add('bgm', { loop: true, volume: 0.3 });
-    this.bgm.play();
-
-    this.crashSound = this.sound.add('crash', { volume: 0.5 });
+    // (Optional) Audio:
+    // this.bgm = this.sound.add('bgm', { loop: true, volume: 0.3 });
+    // this.crashSound = this.sound.add('crash', { volume: 0.5 });
+    // this.bgm.play();
   }
 
   update(time, delta) {
     if (this.gameOver) return;
 
-    // Scroll road background
+    // Scroll road
     this.road.tilePositionY += 0.5;
 
-    // Spawn obstacles on timer
+    // Spawn obstacles on a timer
     this.spawnTimer += delta;
     if (this.spawnTimer > this.spawnInterval) {
       this.spawnTimer = 0;
       this.spawnObstacle();
     }
 
-    // Move obstacles
-    this.obstacles.children.iterate((obstacle) => {
-      obstacle.y += this.obstacleSpeed * (delta / 1000);
-      if (obstacle.y > 700) obstacle.destroy();
+    // Move obstacles downward
+    this.obstacles.children.iterate((obs) => {
+      obs.y += this.obstacleSpeed * (delta / 1000);
+      if (obs.y > 700) obs.destroy();
     });
 
     // Increase score
@@ -151,70 +155,65 @@ class MainScene extends Phaser.Scene {
     this.scoreText.innerHTML = 'Score: ' + Math.floor(this.score);
   }
 
+  // Spawn random obstacle type
   spawnObstacle() {
-    // Randomly pick from multiple obstacles
     const obstacleTypes = ['obstacle_cone', 'obstacle_car1', 'obstacle_car2'];
-    const chosenTexture = Phaser.Utils.Array.GetRandom(obstacleTypes);
+    const chosen = Phaser.Utils.Array.GetRandom(obstacleTypes);
 
-    // Random lane
     const laneIndex = Phaser.Math.Between(0, this.lanes.length - 1);
     const xPos = this.lanes[laneIndex];
 
-    const obstacle = this.physics.add.sprite(xPos, -50, chosenTexture);
+    const obstacle = this.physics.add.sprite(xPos, -50, chosen);
     this.obstacles.add(obstacle);
   }
 
+  // Collision handler
   handleCollision(player, obstacle) {
-    // Spark effect
+    // Spark burst
     this.sparkEmitter.setPosition(player.x, player.y);
     this.sparkEmitter.explode(20);
 
-    // Crash sound
-    this.crashSound.play();
+    // (Optional) crash sound
+    // this.crashSound.play();
 
-    // Game Over
     this.gameOver = true;
     this.gameOverText.style.display = 'block';
     this.player.setTint(0xff0000);
 
-    // Stop music
-    this.bgm.stop();
+    // (Optional) stop background music
+    // this.bgm.stop();
   }
 
+  // Swipe logic
   handleSwipe() {
     const distX = this.endX - this.startX;
     const distY = this.endY - this.startY;
     const SWIPE_THRESHOLD = 50;
 
+    // Horizontal swipe only
     if (Math.abs(distX) > Math.abs(distY)) {
-      // Left
       if (distX < -SWIPE_THRESHOLD && this.currentLane > 0) {
         this.currentLane--;
         this.player.x = this.lanes[this.currentLane];
-      }
-      // Right
-      else if (distX > SWIPE_THRESHOLD && this.currentLane < this.lanes.length - 1) {
+      } else if (distX > SWIPE_THRESHOLD && this.currentLane < this.lanes.length - 1) {
         this.currentLane++;
         this.player.x = this.lanes[this.currentLane];
       }
     }
   }
 
+  // Restart
   restartGame() {
-    // Reset game state
     this.gameOver = false;
     this.gameOverText.style.display = 'none';
     this.score = 0;
 
-    // Reset player
     this.currentLane = 1;
     this.player.x = this.lanes[this.currentLane];
     this.player.clearTint();
 
-    // Clear old obstacles
     this.obstacles.clear(true, true);
 
-    // Restart music
-    this.bgm.play();
+    // (Optional) this.bgm.play();
   }
 }
