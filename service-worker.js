@@ -1,5 +1,5 @@
-// service-worker.js
-const CACHE_NAME = 'latif-runner-v2';
+// service-worker.js - for offline support
+const CACHE_NAME = 'latif-runner-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,7 +8,17 @@ const ASSETS_TO_CACHE = [
   './service-worker.js',
   './manifest.json',
   './icon.png',
-  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js'
+  // The Phaser CDN library
+  'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js',
+  // Assets folder
+  'assets/road_tile.png',
+  'assets/car_spritesheet.png',
+  'assets/obstacle_cone.png',
+  'assets/obstacle_car1.png',
+  'assets/obstacle_car2.png',
+  'assets/spark.png',
+  'assets/bgm.ogg',
+  'assets/crash.wav'
 ];
 
 self.addEventListener('install', (event) => {
