@@ -1,4 +1,4 @@
-// main.js - Latif Runner with car, road, and improved visuals.
+// main.js - Latif Runner with local assets
 
 const config = {
   type: Phaser.AUTO,
@@ -11,159 +11,210 @@ const config = {
       debug: false
     }
   },
-  scene: {
-    preload: preload,
-    create: create,
-    update: update
-  }
+  scene: [MainScene]
 };
 
 let game = new Phaser.Game(config);
 
-// Lanes and general game variables
-let lanes = [90, 180, 270];
-let currentLane = 1;
-let player;
-let obstacles;
-let obstacleSpeed = 250;
-let spawnTimer = 0;
-let spawnInterval = 1200;
-let score = 0;
-let scoreText;
-let gameOverText;
-let gameOver = false;
-
-// Background tile sprite
-let roadBg;
-
-// Variables for swipe detection
-let startX, startY, endX, endY;
-const SWIPE_THRESHOLD = 50;
-
-function preload() {
-  // Load images (placeholders)
-  // Replace these with real sprites or textures for better visuals
-  // Road texture: repeated tile
-  this.load.image('road', 'https://via.placeholder.com/360x640/444444/cccccc?text=Road+Texture');
-  // Car sprite
-  this.load.image('car', 'https://via.placeholder.com/50/ff0000/ffffff?text=Car');
-  // Obstacle (traffic cone or opposing car)
-  this.load.image('obstacle', 'https://via.placeholder.com/50/ff9900/ffffff?text=Cone');
-}
-
-function create() {
-  // Create a tile-sprite to serve as the scrolling road
-  roadBg = this.add.tileSprite(0, 0, config.width, config.height, 'road');
-  roadBg.setOrigin(0);
-
-  // Player car
-  player = this.physics.add.sprite(lanes[currentLane], 550, 'car');
-  player.setCollideWorldBounds(true);
-
-  // Group for obstacles
-  obstacles = this.physics.add.group();
-
-  // Score text (DOM element)
-  scoreText = document.createElement('div');
-  scoreText.id = 'scoreText';
-  scoreText.innerHTML = 'Score: 0';
-  document.getElementById('gameContainer').appendChild(scoreText);
-
-  // Game Over text (DOM element)
-  gameOverText = document.createElement('div');
-  gameOverText.id = 'gameOverText';
-  gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
-  document.getElementById('gameContainer').appendChild(gameOverText);
-
-  // Overlap to detect collisions
-  this.physics.add.overlap(player, obstacles, handleGameOver, null, this);
-
-  // Swipe input
-  this.input.on('pointerdown', (pointer) => {
-    startX = pointer.x;
-    startY = pointer.y;
-  });
-
-  this.input.on('pointerup', (pointer) => {
-    endX = pointer.x;
-    endY = pointer.y;
-    handleSwipe(this);
-
-    // Also handle tap-to-restart if game over
-    if (gameOver) {
-      restartGame(this);
-    }
-  });
-}
-
-function update(time, delta) {
-  if (gameOver) return;
-
-  // Scroll the road texture
-  roadBg.tilePositionY += 0.5;
-
-  // Spawn obstacles
-  spawnTimer += delta;
-  if (spawnTimer > spawnInterval) {
-    spawnTimer = 0;
-    spawnObstacle(this);
+class MainScene extends Phaser.Scene {
+  constructor() {
+    super('MainScene');
   }
 
-  // Increase score over time
-  score += delta * 0.01;
-  scoreText.innerHTML = 'Score: ' + Math.floor(score);
+  preload() {
+    // Load local assets from your "assets" folder
+    // Road tile background
+    this.load.image('road', 'assets/road_tile.png');
 
-  // Move obstacles down
-  obstacles.children.iterate((obstacle) => {
-    if (obstacle) {
-      obstacle.y += obstacleSpeed * (delta / 1000);
-      if (obstacle.y > 700) {
-        obstacle.destroy();
+    // Car spritesheet (if you have multiple frames)
+    // Adjust frameWidth & frameHeight to match car_spritesheet.png
+    this.load.spritesheet('car', 'assets/car_spritesheet.png', {
+      frameWidth: 64,
+      frameHeight: 128
+    });
+
+    // Different obstacles
+    this.load.image('obstacle_cone', 'assets/obstacle_cone.png');
+    this.load.image('obstacle_car1', 'assets/obstacle_car1.png');
+    this.load.image('obstacle_car2', 'assets/obstacle_car2.png');
+
+    // Spark image for collision particle effect
+    this.load.image('spark', 'assets/spark.png');
+
+    // Audio (music & SFX)
+    this.load.audio('bgm', 'assets/bgm.ogg');
+    this.load.audio('crash', 'assets/crash.wav');
+  }
+
+  create() {
+    // Lanes and initial state
+    this.lanes = [90, 180, 270];
+    this.currentLane = 1;
+    this.score = 0;
+    this.gameOver = false;
+
+    // Scrolling background
+    this.road = this.add.tileSprite(0, 0, 360, 640, 'road');
+    this.road.setOrigin(0);
+
+    // Create an animation from the car spritesheet
+    // Adjust frames if you have more or fewer frames
+    this.anims.create({
+      key: 'drive',
+      frames: this.anims.generateFrameNumbers('car', { start: 0, end: 1 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // Player car
+    this.player = this.physics.add.sprite(this.lanes[this.currentLane], 550, 'car');
+    this.player.setCollideWorldBounds(true);
+    this.player.play('drive'); // Play the 'drive' animation
+
+    // Obstacle group
+    this.obstacles = this.physics.add.group();
+
+    // Overlap collision
+    this.physics.add.overlap(this.player, this.obstacles, this.handleCollision, null, this);
+
+    // Spark particle emitter (collision effect)
+    this.sparkParticles = this.add.particles('spark');
+    this.sparkEmitter = this.sparkParticles.createEmitter({
+      x: -100,
+      y: -100,
+      speed: 100,
+      scale: { start: 0.4, end: 0 },
+      lifespan: 400,
+      blendMode: 'ADD',
+      quantity: 10,
+      on: false
+    });
+
+    // DOM Elements for UI
+    this.scoreText = document.createElement('div');
+    this.scoreText.id = 'scoreText';
+    this.scoreText.innerHTML = 'Score: 0';
+    document.getElementById('gameContainer').appendChild(this.scoreText);
+
+    this.gameOverText = document.createElement('div');
+    this.gameOverText.id = 'gameOverText';
+    this.gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
+    document.getElementById('gameContainer').appendChild(this.gameOverText);
+
+    // Input (pointer) for swiping
+    this.input.on('pointerdown', (pointer) => {
+      this.startX = pointer.x;
+      this.startY = pointer.y;
+    });
+
+    this.input.on('pointerup', (pointer) => {
+      this.endX = pointer.x;
+      this.endY = pointer.y;
+      this.handleSwipe();
+
+      if (this.gameOver) this.restartGame();
+    });
+
+    // Spawn logic
+    this.obstacleSpeed = 250;
+    this.spawnTimer = 0;
+    this.spawnInterval = 1200;
+
+    // Play audio
+    this.bgm = this.sound.add('bgm', { loop: true, volume: 0.3 });
+    this.bgm.play();
+
+    this.crashSound = this.sound.add('crash', { volume: 0.5 });
+  }
+
+  update(time, delta) {
+    if (this.gameOver) return;
+
+    // Scroll road background
+    this.road.tilePositionY += 0.5;
+
+    // Spawn obstacles on timer
+    this.spawnTimer += delta;
+    if (this.spawnTimer > this.spawnInterval) {
+      this.spawnTimer = 0;
+      this.spawnObstacle();
+    }
+
+    // Move obstacles
+    this.obstacles.children.iterate((obstacle) => {
+      obstacle.y += this.obstacleSpeed * (delta / 1000);
+      if (obstacle.y > 700) obstacle.destroy();
+    });
+
+    // Increase score
+    this.score += delta * 0.01;
+    this.scoreText.innerHTML = 'Score: ' + Math.floor(this.score);
+  }
+
+  spawnObstacle() {
+    // Randomly pick from multiple obstacles
+    const obstacleTypes = ['obstacle_cone', 'obstacle_car1', 'obstacle_car2'];
+    const chosenTexture = Phaser.Utils.Array.GetRandom(obstacleTypes);
+
+    // Random lane
+    const laneIndex = Phaser.Math.Between(0, this.lanes.length - 1);
+    const xPos = this.lanes[laneIndex];
+
+    const obstacle = this.physics.add.sprite(xPos, -50, chosenTexture);
+    this.obstacles.add(obstacle);
+  }
+
+  handleCollision(player, obstacle) {
+    // Spark effect
+    this.sparkEmitter.setPosition(player.x, player.y);
+    this.sparkEmitter.explode(20);
+
+    // Crash sound
+    this.crashSound.play();
+
+    // Game Over
+    this.gameOver = true;
+    this.gameOverText.style.display = 'block';
+    this.player.setTint(0xff0000);
+
+    // Stop music
+    this.bgm.stop();
+  }
+
+  handleSwipe() {
+    const distX = this.endX - this.startX;
+    const distY = this.endY - this.startY;
+    const SWIPE_THRESHOLD = 50;
+
+    if (Math.abs(distX) > Math.abs(distY)) {
+      // Left
+      if (distX < -SWIPE_THRESHOLD && this.currentLane > 0) {
+        this.currentLane--;
+        this.player.x = this.lanes[this.currentLane];
+      }
+      // Right
+      else if (distX > SWIPE_THRESHOLD && this.currentLane < this.lanes.length - 1) {
+        this.currentLane++;
+        this.player.x = this.lanes[this.currentLane];
       }
     }
-  });
-}
-
-function handleSwipe(scene) {
-  let distX = endX - startX;
-  let distY = endY - startY;
-  
-  // Check horizontal swipe
-  if (Math.abs(distX) > Math.abs(distY)) {
-    // Swipe left
-    if (distX < -SWIPE_THRESHOLD && currentLane > 0) {
-      currentLane--;
-      player.x = lanes[currentLane];
-    }
-    // Swipe right
-    else if (distX > SWIPE_THRESHOLD && currentLane < lanes.length - 1) {
-      currentLane++;
-      player.x = lanes[currentLane];
-    }
   }
-}
 
-function spawnObstacle(scene) {
-  // Randomly pick a lane
-  let laneIndex = Phaser.Math.Between(0, lanes.length - 1);
-  let xPos = lanes[laneIndex];
-  
-  // Place obstacle at top
-  let obstacle = scene.physics.add.sprite(xPos, -50, 'obstacle');
-  obstacles.add(obstacle);
-}
+  restartGame() {
+    // Reset game state
+    this.gameOver = false;
+    this.gameOverText.style.display = 'none';
+    this.score = 0;
 
-function handleGameOver() {
-  gameOver = true;
-  gameOverText.style.display = 'block';
-}
+    // Reset player
+    this.currentLane = 1;
+    this.player.x = this.lanes[this.currentLane];
+    this.player.clearTint();
 
-function restartGame(scene) {
-  // Reset states
-  score = 0;
-  currentLane = 1;
-  player.x = lanes[currentLane];
-  obstacles.clear(true, true);
-  gameOver = false;
-  gameOverText.style.display = 'none';
+    // Clear old obstacles
+    this.obstacles.clear(true, true);
+
+    // Restart music
+    this.bgm.play();
+  }
 }
