@@ -4,7 +4,7 @@ body {
   padding: 0;
   background: #1b1b1b;
   font-family: 'Roboto', sans-serif;
-  color: #ffffff;
+  color: #fff;
   text-align: center;
   user-select: none; /* Prevent text selection on mobile */
 }
@@ -13,8 +13,8 @@ body {
 #gameContainer {
   margin: 0 auto;
   position: relative;
-  width: 360px; /* Match the game width */
-  height: 640px; /* Match the game height */
+  width: 360px; /* Match the Phaser config width */
+  height: 640px; /* Match the Phaser config height */
   background: #000; /* Fallback background */
   border: 2px solid #333;
   overflow: hidden;
