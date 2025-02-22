@@ -32,18 +32,18 @@ class MainScene extends Phaser.Scene {
     //
     // If you have a multi-frame car_spritesheet.png (like the one with 16 frames),
     // then use:
-    this.load.spritesheet('car', 'LatifRunnerV2/assets/car_spritesheet.png', {
+ //   this.load.spritesheet('car', 'LatifRunnerV2/assets/car_spritesheet.png', {
       frameWidth: 64,   // adjust to match each frame
       frameHeight: 64   // adjust to match each frame
     });
 
     // -- OBSTACLES (Traffic Cone, Other Cars) --
-    this.load.image('obstacle_cone', 'LatifRunnerV2/assets/obstacle_cone.png');
-    this.load.image('obstacle_car1', 'LatifRunnerV2/assets/obstacle_car1.png');
-    this.load.image('obstacle_car2', 'LatifRunnerV2/assets/obstacle_car2.png');
+//    this.load.image('obstacle_cone', 'LatifRunnerV2/assets/obstacle_cone.png');
+  //  this.load.image('obstacle_car1', 'LatifRunnerV2/assets/obstacle_car1.png');
+  //  this.load.image('obstacle_car2', 'LatifRunnerV2/assets/obstacle_car2.png');
 
     // -- SPARK EFFECT (For collision particles) --
-    this.load.image('spark', 'LatifRunnerV2/assets/spark.png');
+  //  this.load.image('spark', 'LatifRunnerV2/assets/spark.png');
 
     // (Optional) AUDIO FILES
     // e.g. this.load.audio('bgm', 'LatifRunnerV2/assets/bgm.ogg');
