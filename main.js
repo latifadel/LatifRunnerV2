@@ -1,6 +1,6 @@
-// main.js - Phaser 3 runner with ONLY shapes (no images)
-// This should display a simple colored background, a red player rectangle,
-// and blue obstacle rectangles. No external assets needed.
+// main.js - Phaser 3 runner with more visually interesting shapes
+// - Colorful road, dashed lane lines, a bright player rectangle, and colored obstacles
+// - No images at all, so you can confirm everything purely with shape-based rendering.
 
 const config = {
   type: Phaser.AUTO,
@@ -22,131 +22,143 @@ const config = {
 
 let game = new Phaser.Game(config);
 
-// Lanes (x positions) for the player and obstacles
-let lanes = [90, 180, 270];
+// Lane data
+let lanes = [60, 180, 300]; // We'll adjust the lane centers to fit the new road layout
 let currentLane = 1;
 
-// Player and obstacles
+// Player
 let player;
+let gameOver = false;
+
+// Obstacles
 let obstacles;
 let obstacleSpeed = 200;
 let spawnTimer = 0;
 let spawnInterval = 1200;
-let gameOver = false;
 
 // Score
 let score = 0;
-let scoreText;
-let gameOverText;
+let scoreText, gameOverText;
 
-// Swipe variables
+// Lane line dashes
+let laneDashes = [];
+
+// Swipe
 let startX, startY, endX, endY;
 const SWIPE_THRESHOLD = 50;
 
 function preload() {
-  // No images or audio to load
+  // No external images or audio
 }
 
 function create() {
-  // 1) A simple background rectangle for "road"
-  // Instead of a tileSprite or image, just a big gray rectangle
-  let bg = this.add.rectangle(0, 0, 360, 640, 0x444444);
-  bg.setOrigin(0);
+  // 1) ROAD BACKGROUND
+  // We'll create a large "road" rectangle using Phaser Graphics for a bit more color control
+  let roadGraphics = this.add.graphics();
+  roadGraphics.fillStyle(0x333333, 1); // dark gray
+  // Draw a rectangle from (0,0) to (360,640)
+  roadGraphics.fillRect(0, 0, 360, 640);
 
-  // 2) Player (red rectangle)
-  // We'll create a graphics-based rectangle using Arcade Physics
-  // By default, shapes in Phaser are not physics objects, so we can create
-  // them + a physics body separately OR use a container.
-  player = this.add.rectangle(lanes[currentLane], 550, 50, 50, 0xff0000);
+  // 2) LANE LINES (DASHED)
+  // We'll create two vertical sets of dashes to separate the 3 lanes:
+  // Lane boundaries: x=120, x=240
+  // We'll store them in an array so we can move them in update()
+  createLaneDashes(this, 120);
+  createLaneDashes(this, 240);
+
+  // 3) PLAYER (bright red rectangle)
+  // We'll place a rectangle for the player at the middle lane near the bottom
+  player = this.add.rectangle(lanes[currentLane], 550, 40, 40, 0xff2e2e);
+  // Add physics so we can use overlap with obstacles
   this.physics.add.existing(player);
   player.body.setCollideWorldBounds(true);
 
-  // 3) Group for obstacles
-  obstacles = this.add.group();
-
-  // 4) Overlap for collisions
-  // Because obstacles will be shapes, we must also give them physics bodies
-  // at spawn time to detect overlap.
+  // 4) OBSTACLES GROUP
+  obstacles = this.physics.add.group();
   this.physics.add.overlap(player, obstacles, handleCollision, null, this);
 
-  // 5) Basic "score" text (using DOM, to avoid any fonts load)
+  // 5) SCORE UI (DOM elements)
   scoreText = document.createElement('div');
-  scoreText.style.position = 'absolute';
-  scoreText.style.top = '10px';
-  scoreText.style.left = '10px';
-  scoreText.style.color = '#fff';
-  scoreText.innerHTML = 'Score: 0';
+  scoreText.id = 'scoreText';
+  scoreText.innerText = 'Score: 0';
   document.getElementById('gameContainer').appendChild(scoreText);
 
-  // 6) Game Over text
+  // 6) GAME OVER TEXT (DOM)
   gameOverText = document.createElement('div');
-  gameOverText.style.position = 'absolute';
-  gameOverText.style.top = '50%';
-  gameOverText.style.left = '50%';
-  gameOverText.style.transform = 'translate(-50%, -50%)';
-  gameOverText.style.fontSize = '24px';
-  gameOverText.style.fontWeight = 'bold';
-  gameOverText.style.color = '#fff';
-  gameOverText.style.display = 'none';
+  gameOverText.id = 'gameOverText';
   gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
   document.getElementById('gameContainer').appendChild(gameOverText);
 
-  // 7) Swipe Input
+  // 7) INPUT (SWIPE)
   this.input.on('pointerdown', (pointer) => {
     startX = pointer.x;
     startY = pointer.y;
   });
-
   this.input.on('pointerup', (pointer) => {
     endX = pointer.x;
     endY = pointer.y;
-    handleSwipe.call(this);
+    handleSwipe(this);
 
-    // Tap to restart if game over
     if (gameOver) {
-      restartGame.call(this);
+      restartGame();
     }
   });
+}
+
+// Creates a series of rectangular "dashes" in a vertical line at the given x-position
+function createLaneDashes(scene, xPos) {
+  // We'll create dashes spaced out along the Y axis
+  // Each dash is 6px wide, 30px tall, spaced 50px apart
+  for (let i = 0; i < 800; i += 50) {
+    let dashRect = scene.add.rectangle(xPos, i, 6, 30, 0xffffff);
+    laneDashes.push(dashRect);
+  }
 }
 
 function update(time, delta) {
   if (gameOver) return;
 
-  // Spawn obstacles on a timer
+  // 1) MOVE LANE DASHES DOWN
+  // We'll move them at a rate that looks like the road is scrolling
+  laneDashes.forEach(dash => {
+    dash.y += 0.5;
+    // If a dash goes off the bottom, move it back up to the top
+    if (dash.y > 640) {
+      dash.y -= 640;
+    }
+  });
+
+  // 2) SPAWN OBSTACLES
   spawnTimer += delta;
   if (spawnTimer > spawnInterval) {
     spawnTimer = 0;
-    spawnObstacle.call(this);
+    spawnObstacle(this);
   }
 
-  // Move obstacles down
-  obstacles.children.each((obs) => {
+  // 3) MOVE OBSTACLES
+  obstacles.children.each(obs => {
     obs.y += obstacleSpeed * (delta / 1000);
-    // If it goes off-screen
     if (obs.y > 700) {
-      // Remove from scene
       obs.destroy();
     }
   });
 
-  // Increase score
+  // 4) INCREMENT SCORE
   score += delta * 0.01;
-  scoreText.innerHTML = 'Score: ' + Math.floor(score);
+  scoreText.innerText = 'Score: ' + Math.floor(score);
 }
 
-// Create a new obstacle (blue rectangle)
-function spawnObstacle() {
-  // Random lane
+// Creates a random colored obstacle at a random lane top
+function spawnObstacle(scene) {
   let laneIndex = Phaser.Math.Between(0, lanes.length - 1);
   let xPos = lanes[laneIndex];
 
-  // Create a rectangle
-  let obstacleRect = this.add.rectangle(xPos, -25, 50, 50, 0x0000ff);
-  // Add a physics body
-  this.physics.add.existing(obstacleRect);
-
-  // Add it to the group
-  obstacles.add(obstacleRect);
+  // Obstacle will be a 40×40 rectangle
+  // We'll give it a random color for variety
+  let randomColor = Phaser.Display.Color.RandomRGB().color; // e.g., 0xabcdef
+  let obsRect = scene.add.rectangle(xPos, -20, 40, 40, randomColor);
+  scene.physics.add.existing(obsRect);
+  obstacles.add(obsRect);
 }
 
 function handleCollision() {
@@ -154,11 +166,11 @@ function handleCollision() {
   gameOverText.style.display = 'block';
 }
 
-// Swipe logic
-function handleSwipe() {
+function handleSwipe(scene) {
   let distX = endX - startX;
   let distY = endY - startY;
 
+  // If horizontal swipe is bigger than vertical
   if (Math.abs(distX) > Math.abs(distY)) {
     // Left
     if (distX < -SWIPE_THRESHOLD && currentLane > 0) {
@@ -174,10 +186,14 @@ function handleSwipe() {
 }
 
 function restartGame() {
-  score = 0;
-  currentLane = 1;
-  player.x = lanes[currentLane];
-  obstacles.clear(true, true);
   gameOver = false;
   gameOverText.style.display = 'none';
+  score = 0;
+
+  // Reset player to middle lane
+  currentLane = 1;
+  player.x = lanes[currentLane];
+
+  // Clear old obstacles
+  obstacles.clear(true, true);
 }
