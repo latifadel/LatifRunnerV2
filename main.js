@@ -24,7 +24,7 @@ class MainScene extends Phaser.Scene {
   preload() {
     // -- ROAD TILE (Scrolling Background) --
     // Replace "road_tile.png" with your file’s exact name if it differs
-    this.load.image('road', 'LatifRunnerV2/assets/road_tile.png');
+  //  this.load.image('road', 'LatifRunnerV2/assets/road_tile.png');
 
     // -- CAR SPRITE OR SPRITESHEET --
     // If your car image is just a single frame (like green_car.png), use:
