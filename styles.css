@@ -1,63 +1,18 @@
-/* Global body styling */
+/* Minimal styling to see if shapes display */
+
 body {
   margin: 0;
   padding: 0;
-  background: #1b1b1b;
-  font-family: 'Roboto', sans-serif;
-  color: #fff;
-  text-align: center;
-  user-select: none; /* Prevent text selection on mobile */
+  background: #222;
+  font-family: sans-serif;
 }
 
-/* Game container */
 #gameContainer {
   margin: 0 auto;
   position: relative;
-  width: 360px; /* Match the Phaser config width */
-  height: 640px; /* Match the Phaser config height */
-  background: #000; /* Fallback background */
+  width: 360px;
+  height: 640px;
+  background: #000;
   border: 2px solid #333;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
-  border-radius: 8px;
-}
-
-/* Score text */
-#scoreText {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 6px 12px;
-  font-size: 18px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #ffffff;
-  border-radius: 6px;
-  z-index: 10;
-}
-
-/* Game Over text */
-#gameOverText {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 70%;
-  transform: translate(-50%, -50%);
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 1.4;
-  color: #fff;
-  padding: 20px;
-  display: none; /* hidden by default */
-  background: rgba(0,0,0,0.7);
-  border: 2px solid #fff;
-  border-radius: 10px;
-  z-index: 10;
-  cursor: pointer;
-}
-
-#gameOverText small {
-  display: block;
-  font-size: 16px;
-  margin-top: 10px;
-  opacity: 0.9;
 }
