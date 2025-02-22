@@ -2,43 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Latif Runner</title>
+  <title>Latif Runner (Shapes Only)</title>
 
-  <!-- Viewport for mobile responsiveness -->
+  <!-- Viewport for mobile -->
   <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
-
-  <!-- Add to Homescreen on iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- Manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- iOS Icon -->
-  <link rel="apple-touch-icon" href="icon.png">
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Phaser 3 -->
+  <!-- Phaser 3 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-
-  <!-- Main game script -->
+  
+  <!-- Main Game Script -->
   <script src="main.js" defer></script>
 </head>
 <body>
   <div id="gameContainer"></div>
-
-  <!-- Register Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('Service Worker registered successfully.'))
-        .catch(error => console.log('Service Worker registration failed:', error));
-    }
-  </script>
 </body>
 </html>
