@@ -24,30 +24,30 @@ class MainScene extends Phaser.Scene {
   preload() {
     // -- ROAD TILE (Scrolling Background) --
     // Replace "road_tile.png" with your file’s exact name if it differs
-    this.load.image('road', 'assets/road_tile.png');
+    this.load.image('road', 'LatifRunnerV2/assets/road_tile.png');
 
     // -- CAR SPRITE OR SPRITESHEET --
     // If your car image is just a single frame (like green_car.png), use:
-    // this.load.image('car', 'assets/green_car.png');
+    // this.load.image('car', 'LatifRunnerV2/assets/green_car.png');
     //
     // If you have a multi-frame car_spritesheet.png (like the one with 16 frames),
     // then use:
-    this.load.spritesheet('car', 'assets/car_spritesheet.png', {
+    this.load.spritesheet('car', 'LatifRunnerV2/assets/car_spritesheet.png', {
       frameWidth: 64,   // adjust to match each frame
       frameHeight: 64   // adjust to match each frame
     });
 
     // -- OBSTACLES (Traffic Cone, Other Cars) --
-    this.load.image('obstacle_cone', 'assets/obstacle_cone.png');
-    this.load.image('obstacle_car1', 'assets/obstacle_car1.png');
-    this.load.image('obstacle_car2', 'assets/obstacle_car2.png');
+    this.load.image('obstacle_cone', 'LatifRunnerV2/assets/obstacle_cone.png');
+    this.load.image('obstacle_car1', 'LatifRunnerV2/assets/obstacle_car1.png');
+    this.load.image('obstacle_car2', 'LatifRunnerV2/assets/obstacle_car2.png');
 
     // -- SPARK EFFECT (For collision particles) --
-    this.load.image('spark', 'assets/spark.png');
+    this.load.image('spark', 'LatifRunnerV2/assets/spark.png');
 
     // (Optional) AUDIO FILES
-    // e.g. this.load.audio('bgm', 'assets/bgm.ogg');
-    // e.g. this.load.audio('crash', 'assets/crash.wav');
+    // e.g. this.load.audio('bgm', 'LatifRunnerV2/assets/bgm.ogg');
+    // e.g. this.load.audio('crash', 'LatifRunnerV2/assets/crash.wav');
   }
 
   create() {
