@@ -1,22 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Latif Runner 3D (Simplified)</title>
+  <meta charset="utf-8">
+  <title>Flowerty/Batman Runner (No Framework)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 
-  <!-- Viewport for mobile responsiveness -->
-  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+  <!-- Optional: A "Batman-esque" font (free from Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* 
+      Overall page styling:
+      - A radial gradient background 
+      - A custom Batman-like font
+      - No scrollbars or padding
+    */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Staatliches', sans-serif; /* Fallback to sans-serif if needed */
+      background: radial-gradient(ellipse at center, #0b0f17 0%, #000000 100%);
+      color: #ffffff;
+      text-align: center;
+      overflow: hidden;
+    }
 
-  <!-- Phaser 3 (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    /* 
+      Container for the game:
+      - We place the canvas inside a div 
+      - Give it a nice border, drop shadow, and some spacing 
+    */
+    #gameContainer {
+      position: relative;
+      width: 360px;
+      height: 640px;
+      margin: 40px auto;
+      background: #000;
+      border: 3px solid #444;
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+    }
 
-  <!-- Main Script -->
-  <script src="main.js" defer></script>
+    /* 
+      The canvas takes the full area inside #gameContainer 
+      so we match its size to 360x640 in code.
+    */
+    canvas {
+      display: block;
+      /* No extra borders needed, but you can add if you like:
+      border: 1px solid #666;
+      */
+    }
+
+    /* A small heading for a "Batman Runner" label (optional) */
+    h1 {
+      margin: 10px 0 0 0;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: #ffc600; /* A Batman-like yellow */
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    }
+  </style>
 </head>
 <body>
-  <div id="gameContainer"></div>
+  <!-- An optional heading -->
+  <h1>Batman Runner</h1>
+
+  <!-- The game container with our canvas -->
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="360" height="640"></canvas>
+  </div>
+
+  <script>
+    /***************************************************************
+     *  Batman Runner (Vanilla JS) - Polished Style Edition
+     *
+     *  - 3 Lanes
+     *  - "Batman" at bottom, obstacles from top
+     *  - Swipe left/right to dodge
+     *  - Basic bounding-box collision
+     *  - requestAnimationFrame loop
+     *  - Slight "perspective" scaling of obstacles
+     ***************************************************************/
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Canvas dimensions
+    const W = canvas.width;
+    const H = canvas.height;
+
+    // Lanes: 3 lanes
+    const laneCenters = [W * 0.25, W * 0.5, W * 0.75];
+    let currentLane = 1; // start in the middle
+
+    // Player (Batman) near bottom
+    let playerY = H * 0.8;
+    const playerWidth = 30;
+    const playerHeight = 40;
+
+    // Obstacles
+    let obstacles = [];
+    let lastSpawnTime = 0;
+    let spawnInterval = 1500; // ms
+    let gameOver = false;
+    let score = 0;
+    let lastTime = 0;
+
+    // Swipe variables
+    let startX = 0, startY = 0, endX = 0, endY = 0;
+    const SWIPE_THRESHOLD = 50;
+
+    // Road perspective
+    const roadTopY = H * 0.3;
+    const roadTopLeft = W * 0.3;
+    const roadTopRight = W * 0.7;
+
+    // Listen for pointer (touch/mouse) to handle swipe
+    canvas.addEventListener('pointerdown', e => {
+      startX = e.clientX - canvas.offsetLeft;
+      startY = e.clientY - canvas.offsetTop;
+    });
+
+    canvas.addEventListener('pointerup', e => {
+      endX = e.clientX - canvas.offsetLeft;
+      endY = e.clientY - canvas.offsetTop;
+      handleSwipe();
+      if (gameOver) {
+        // Tap to restart
+        restartGame();
+      }
+    });
+
+    function handleSwipe() {
+      const distX = endX - startX;
+      const distY = endY - startY;
+      if (Math.abs(distX) > Math.abs(distY)) {
+        // left
+        if (distX < -SWIPE_THRESHOLD && currentLane > 0) {
+          currentLane--;
+        }
+        // right
+        else if (distX > SWIPE_THRESHOLD && currentLane < laneCenters.length - 1) {
+          currentLane++;
+        }
+      }
+    }
+
+    function spawnObstacle() {
+      const laneIndex = Math.floor(Math.random() * 3);
+      const obs = {
+        lane: laneIndex,
+        y: roadTopY,
+        w: 30,
+        h: 30
+      };
+      obstacles.push(obs);
+    }
+
+    function updateObstacles(dt) {
+      // move obstacles downward
+      const speed = 0.25 * H; // px/sec
+      const move = speed * (dt / 1000);
+      for (let i = 0; i < obstacles.length; i++) {
+        obstacles[i].y += move;
+      }
+      // remove off-screen
+      obstacles = obstacles.filter(o => o.y < H + 100);
+    }
+
+    function checkCollisions() {
+      // Player bounding box
+      const px = laneCenters[currentLane] - playerWidth / 2;
+      const py = playerY - playerHeight / 2;
+      const pw = playerWidth;
+      const ph = playerHeight;
+
+      for (let obs of obstacles) {
+        const { x, y, scaleW, scaleH } = getObstacleScreenRect(obs);
+        if (rectOverlap(px, py, pw, ph, x, y, scaleW, scaleH)) {
+          gameOver = true;
+        }
+      }
+    }
+
+    function rectOverlap(x1,y1,w1,h1, x2,y2,w2,h2) {
+      return (
+        x1 < x2 + w2 &&
+        x1 + w1 > x2 &&
+        y1 < y2 + h2 &&
+        y1 + h1 > y2
+      );
+    }
+
+    function getObstacleScreenRect(obs) {
+      const t = (obs.y - roadTopY) / (H - roadTopY);
+      const leftEdge = roadTopLeft + (0 - roadTopLeft) * t;
+      const rightEdge = roadTopRight + (W - roadTopRight) * t;
+      const roadWidth = rightEdge - leftEdge;
+
+      const laneFrac = (obs.lane + 1) / (3 + 1);
+      const xCenter = leftEdge + roadWidth * laneFrac;
+
+      // scale from smaller near top to bigger near bottom
+      const s = 0.5 + t * 1.0;
+      const scaledW = obs.w * s;
+      const scaledH = obs.h * s;
+
+      return {
+        x: xCenter - scaledW / 2,
+        y: obs.y - scaledH / 2,
+        scaleW: scaledW,
+        scaleH: scaledH
+      };
+    }
+
+    function updateScore(dt) {
+      score += dt * 0.01;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Background: a subtle dark gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, '#0b0f17');
+      bgGrad.addColorStop(1, '#000000');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Road trapezoid
+      ctx.fillStyle = '#333';
+      ctx.beginPath();
+      ctx.moveTo(roadTopLeft, roadTopY);
+      ctx.lineTo(roadTopRight, roadTopY);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // Two lane lines
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      drawLaneLine(1/3);
+      drawLaneLine(2/3);
+
+      function drawLaneLine(frac) {
+        ctx.beginPath();
+        let steps = 10;
+        for (let i=0; i<=steps; i++) {
+          const st = i / steps;
+          const yy = roadTopY + (H - roadTopY)*st;
+          const leftE = roadTopLeft + (0 - roadTopLeft)*st;
+          const rightE = roadTopRight + (W - roadTopRight)*st;
+          const w = rightE - leftE;
+          const xx = leftE + w*frac;
+          if (i===0) ctx.moveTo(xx, yy);
+          else ctx.lineTo(xx, yy);
+        }
+        ctx.stroke();
+      }
+
+      // Obstacles
+      for (let obs of obstacles) {
+        const { x, y, scaleW, scaleH } = getObstacleScreenRect(obs);
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillRect(x, y, scaleW, scaleH);
+      }
+
+      // Batman player
+      const px = laneCenters[currentLane] - playerWidth / 2;
+      const py = playerY - playerHeight / 2;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(px, py, playerWidth, playerHeight);
+
+      // Yellow ellipse for bat symbol
+      ctx.fillStyle = '#ffff00';
+      ctx.beginPath();
+      ctx.ellipse(
+        px + playerWidth / 2,
+        py + playerHeight*0.6,
+        playerWidth * 0.3,
+        playerHeight * 0.15,
+        0, 0, 2*Math.PI
+      );
+      ctx.fill();
+
+      // Score
+      ctx.fillStyle = '#fff';
+      ctx.font = '18px "Staatliches", sans-serif';
+      ctx.fillText('Score: ' + Math.floor(score), 10, 25);
+
+      // Game Over overlay
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '28px "Staatliches", sans-serif';
+        ctx.fillText('GAME OVER', W*0.3, H*0.5);
+
+        ctx.font = '16px "Staatliches", sans-serif';
+        ctx.fillText('Tap to Restart', W*0.3, H*0.55);
+      }
+    }
+
+    function loop(timestamp) {
+      const dt = timestamp - lastTime;
+      lastTime = timestamp;
+
+      if (!gameOver) {
+        updateScore(dt);
+        updateObstacles(dt);
+        checkCollisions();
+
+        if (timestamp - lastSpawnTime > spawnInterval) {
+          spawnObstacle();
+          lastSpawnTime = timestamp;
+        }
+      }
+
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function restartGame() {
+      gameOver = false;
+      obstacles = [];
+      score = 0;
+      currentLane = 1;
+      lastSpawnTime = performance.now();
+    }
+
+    requestAnimationFrame(loop);
+  </script>
 </body>
 </html>
