@@ -1,5 +1,4 @@
-/* Minimal styling, but with a bit of flair for the container */
-
+/* A bit of styling to make the container nicer. */
 body {
   margin: 0;
   padding: 0;
@@ -13,7 +12,7 @@ body {
   position: relative;
   width: 360px;
   height: 640px;
-  background: #000; /* fallback */
+  background: #000;
   border: 2px solid #333;
   overflow: hidden;
   box-shadow: 0 0 20px rgba(0,0,0,0.7);
