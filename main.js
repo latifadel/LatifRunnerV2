@@ -1,4 +1,12 @@
-// main.js - Latif Runner with more decorative shapes, no images needed.
+/**
+ * Latif Runner 3D (Shapes)
+ * 
+ * A pseudo-3D runner using only shapes for a "third-person" road perspective:
+ * - The road is a trapezoid (vanishing near the top).
+ * - Lanes converge upward, obstacles grow as they come "closer."
+ * - Player can swipe lanes, see obstacles approach in perspective.
+ * - Score increments, collision triggers Game Over.
+ */
 
 const config = {
   type: Phaser.AUTO,
@@ -11,261 +19,301 @@ const config = {
       debug: false
     }
   },
-  scene: {
-    preload: preload,
-    create: create,
-    update: update
-  }
+  scene: [MainScene]
 };
 
 let game = new Phaser.Game(config);
 
-// Lanes: We'll center the road in the middle, with 3 lanes.
-let lanes = [110, 180, 250];
-let currentLane = 1;
-let player;
-let obstacles;
-let obstacleSpeed = 200;
-let spawnTimer = 0;
-let spawnInterval = 1200;
-let gameOver = false;
-
-// Scrolling lane lines
-let laneDashes = [];
-
-// Scrolling trees in the grass
-let trees = [];
-
-// Score
-let score = 0;
-let scoreText;
-let gameOverText;
-
-// Swipe
-let startX, startY, endX, endY;
-const SWIPE_THRESHOLD = 50;
-
-function preload() {
-  // No external assets needed
-}
-
-function create() {
-  // --- 1) SKY & GRASS BACKGROUND ---
-  drawEnvironment.call(this);
-
-  // --- 2) LANE LINES (DASHES) ---
-  // We'll create dashed lines at x=145 and x=215 to separate the 3 lanes
-  createLaneDashes.call(this, 145);
-  createLaneDashes.call(this, 215);
-
-  // --- 3) PLAYER ---
-  // A bright rectangle for the player car
-  player = this.add.rectangle(lanes[currentLane], 550, 40, 40, 0xff2e2e);
-  this.physics.add.existing(player);
-  player.body.setCollideWorldBounds(true);
-
-  // --- 4) OBSTACLES GROUP ---
-  obstacles = this.physics.add.group();
-  this.physics.add.overlap(player, obstacles, handleCollision, null, this);
-
-  // --- 5) SCORE & GAME OVER UI (DOM) ---
-  scoreText = document.createElement('div');
-  scoreText.id = 'scoreText';
-  scoreText.innerHTML = 'Score: 0';
-  document.getElementById('gameContainer').appendChild(scoreText);
-
-  gameOverText = document.createElement('div');
-  gameOverText.id = 'gameOverText';
-  gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
-  document.getElementById('gameContainer').appendChild(gameOverText);
-
-  // --- 6) SWIPE INPUT ---
-  this.input.on('pointerdown', (pointer) => {
-    startX = pointer.x;
-    startY = pointer.y;
-  });
-  this.input.on('pointerup', (pointer) => {
-    endX = pointer.x;
-    endY = pointer.y;
-    handleSwipe();
-
-    if (gameOver) {
-      restartGame();
-    }
-  });
-
-  // --- OBSTACLE TIMER ---
-  spawnTimer = 0;
-
-  // --- CREATE SOME TREES ON THE GRASS (SCROLLING) ---
-  createTrees.call(this);
-}
-
-function update(time, delta) {
-  if (gameOver) return;
-
-  // 1) SCROLL LANE DASHES
-  laneDashes.forEach(d => {
-    d.y += 0.8;
-    if (d.y > 640) {
-      d.y -= 640;
-    }
-  });
-
-  // 2) SCROLL TREES
-  trees.forEach(tree => {
-    tree.y += 0.3;
-    if (tree.y > 640) {
-      tree.y = -Math.random() * 200; // Move it back up randomly
-    }
-  });
-
-  // 3) SPAWN OBSTACLES
-  spawnTimer += delta;
-  if (spawnTimer > spawnInterval) {
-    spawnTimer = 0;
-    spawnObstacle.call(this);
+class MainScene extends Phaser.Scene {
+  constructor() {
+    super('MainScene');
   }
 
-  // 4) MOVE OBSTACLES
-  obstacles.children.each(obs => {
-    obs.y += obstacleSpeed * (delta / 1000);
-    if (obs.y > 700) {
-      obs.destroy();
-    }
-  });
-
-  // 5) SCORE
-  score += delta * 0.01;
-  scoreText.innerHTML = 'Score: ' + Math.floor(score);
-}
-
-/**
- * Draw environment shapes:
- * - Sky (blue rectangle)
- * - Grass on left and right (green rectangles)
- * - Road (dark grey in the middle)
- */
-function drawEnvironment() {
-  // 1) Sky
-  let sky = this.add.graphics();
-  sky.fillStyle(0x87CEEB, 1); // Light sky blue
-  sky.fillRect(0, 0, 360, 640);
-
-  // 2) Road area in the middle
-  let road = this.add.graphics();
-  road.fillStyle(0x333333, 1);
-  // We'll make the road from x=80 to x=280
-  road.fillRect(80, 0, 200, 640);
-
-  // 3) Grass on the left side (x=0..80) and right side (x=280..360)
-  let grassLeft = this.add.graphics();
-  grassLeft.fillStyle(0x339933, 1);
-  grassLeft.fillRect(0, 0, 80, 640);
-
-  let grassRight = this.add.graphics();
-  grassRight.fillStyle(0x339933, 1);
-  grassRight.fillRect(280, 0, 80, 640);
-}
-
-/** 
- * Create dashed lane lines at given x position. 
- * Each dash is 6 wide, 30 high, spaced ~40px apart. 
- */
-function createLaneDashes(xPos) {
-  for (let i = 0; i < 640; i += 40) {
-    let dash = this.add.rectangle(xPos, i, 6, 30, 0xffffff);
-    laneDashes.push(dash);
+  preload() {
+    // No external images needed
   }
-}
 
-/**
- * Create some "trees" on the grass, 
- * each tree is a trunk + circle top (grouped as a container for scrolling).
- */
-function createTrees() {
-  // We'll place ~6 trees on left grass, 6 on right grass, 
-  // random y offset, scroll them down in update.
-  for (let i = 0; i < 6; i++) {
-    let xPosLeft = Phaser.Math.Between(20, 60);   // Left grass area
-    let yPos = Phaser.Math.Between(0, 640);
-    trees.push(createSingleTree.call(this, xPosLeft, yPos));
+  create() {
+    // Basic config
+    this.gameOver = false;
+    this.score = 0;
 
-    let xPosRight = Phaser.Math.Between(300, 340); // Right grass area
-    let yPosR = Phaser.Math.Between(0, 640);
-    trees.push(createSingleTree.call(this, xPosRight, yPosR));
+    // Draw sky + ground
+    this.drawBackground();
+
+    // Draw the trapezoid road itself (just for visual reference)
+    // We'll still do actual transformations for objects
+    this.drawRoadShape();
+
+    // Lane config:
+    // We'll treat "virtualY" = 0 at the horizon, 640 at bottom (player area).
+    // 3 lanes: -1, 0, +1 offset from center line
+    this.laneOffsets = [-1, 0, +1];
+    this.currentLaneIndex = 1; // start in center lane
+
+    // Player shape: A rectangle that we scale/position each frame
+    this.playerRect = this.add.rectangle(0, 0, 40, 40, 0xff4444);
+    // Give it physics for collision with obstacles
+    this.physics.add.existing(this.playerRect);
+
+    // Obstacles group
+    this.obstacles = this.physics.add.group();
+    this.physics.add.overlap(this.playerRect, this.obstacles, this.handleCollision, null, this);
+
+    // Dom elements for score + gameOver
+    this.createUI();
+
+    // Swipe input
+    this.input.on('pointerdown', (pointer) => {
+      this.startX = pointer.x;
+      this.startY = pointer.y;
+    });
+    this.input.on('pointerup', (pointer) => {
+      this.endX = pointer.x;
+      this.endY = pointer.y;
+      this.handleSwipe();
+
+      if (this.gameOver) {
+        this.restartGame();
+      }
+    });
+
+    // Timers
+    this.obstacleSpeed = 0.05; // How fast obstacles move from top to bottom in virtual coords
+    this.spawnTimer = 0;
+    this.spawnInterval = 1200; // ms
+
+    // We'll define the "player's virtual Y" near the bottom
+    this.playerY = 600; // 0=top horizon, 640=bottom
+    this.updatePlayerPosition();
   }
-}
 
-/**
- * Helper to create one "tree" using shapes:
- * - a small brown rectangle as trunk
- * - a green circle as leaves
- * We'll group them in a Container so we can scroll them easily in `update()`.
- */
-function createSingleTree(x, y) {
-  // A container that holds trunk + circle
-  let treeContainer = this.add.container(x, y);
+  update(time, delta) {
+    if (this.gameOver) return;
 
-  // Trunk: rectangle 8 wide, 20 tall
-  let trunk = this.add.rectangle(0, 10, 8, 20, 0x8B4513);
-  trunk.setOrigin(0.5, 1);
-
-  // Leaves: circle with radius ~12
-  let leaves = this.add.circle(0, -5, 12, 0x228B22); // dark green
-
-  treeContainer.add([trunk, leaves]);
-
-  return treeContainer;
-}
-
-/**
- * Spawn a random colored obstacle on the road 
- * in one of the 3 lanes [110, 180, 250].
- */
-function spawnObstacle() {
-  let laneIndex = Phaser.Math.Between(0, lanes.length - 1);
-  let xPos = lanes[laneIndex];
-
-  // Random color for each obstacle
-  let color = Phaser.Display.Color.RandomRGB().color;
-  let obsRect = this.add.rectangle(xPos, -20, 40, 40, color);
-  this.physics.add.existing(obsRect);
-  obstacles.add(obsRect);
-}
-
-function handleCollision() {
-  gameOver = true;
-  gameOverText.style.display = 'block';
-}
-
-function handleSwipe() {
-  const distX = endX - startX;
-  const distY = endY - startY;
-
-  if (Math.abs(distX) > Math.abs(distY)) {
-    // left
-    if (distX < -SWIPE_THRESHOLD && currentLane > 0) {
-      currentLane--;
-      player.x = lanes[currentLane];
+    // Spawn obstacles
+    this.spawnTimer += delta;
+    if (this.spawnTimer > this.spawnInterval) {
+      this.spawnTimer = 0;
+      this.spawnObstacle();
     }
-    // right
-    else if (distX > SWIPE_THRESHOLD && currentLane < lanes.length - 1) {
-      currentLane++;
-      player.x = lanes[currentLane];
+
+    // Update obstacles
+    this.obstacles.children.each(obs => {
+      // obs.virtY goes from 0 (top/horizon) to 640 (bottom)
+      obs.virtY += this.obstacleSpeed * delta;
+      // If off the bottom, destroy
+      if (obs.virtY > 700) {
+        obs.destroy();
+        return;
+      }
+      // Update its position + scale based on virtY
+      this.updateObstacle(obs);
+    });
+
+    // Increase score
+    this.score += delta * 0.01;
+    this.scoreText.innerHTML = 'Score: ' + Math.floor(this.score);
+
+    // Update the player shape each frame
+    this.updatePlayerPosition();
+  }
+
+  /** 
+   * Draw a gradient background: 
+   * - Blue sky at top
+   * - Brownish ground at bottom
+   * We'll just use 2 large rectangles for simplicity. 
+   */
+  drawBackground() {
+    let sky = this.add.graphics();
+    sky.fillStyle(0x87CEEB, 1); // sky color
+    sky.fillRect(0, 0, 360, 320);
+
+    let ground = this.add.graphics();
+    ground.fillStyle(0x6B4A2C, 1); // brownish
+    ground.fillRect(0, 320, 360, 320);
+  }
+
+  /**
+   * Draw the main trapezoid road shape for reference:
+   * We'll define top corners narrower, bottom corners wider.
+   */
+  drawRoadShape() {
+    // top: x=130, x=230
+    // bottom: x=40, x=320
+    let road = this.add.graphics();
+    road.fillStyle(0x333333, 1);
+    road.beginPath();
+    road.moveTo(130, 0);
+    road.lineTo(230, 0);
+    road.lineTo(320, 640);
+    road.lineTo(40, 640);
+    road.closePath();
+    road.fill();
+
+    // Now let's draw white lane lines in perspective
+    // We'll do 2 lines dividing the road into 3 lanes
+    // We'll do them from top (somewhere between 130->230) down to bottom (somewhere between 40->320)
+    let laneGraphics = this.add.graphics({ lineStyle: { width: 2, color: 0xffffff, alpha: 0.8 } });
+    // Lane 1: 1/3 from left
+    // Lane 2: 2/3 from left
+    // We'll param t from 0->1 for top->bottom
+    // leftEdge at top = 130, rightEdge at top = 230
+    // leftEdge at bottom = 40, rightEdge at bottom = 320
+    const steps = 20;
+    for (let l = 1; l < 3; l++) {
+      laneGraphics.beginPath();
+      for (let s = 0; s <= steps; s++) {
+        let t = s / steps;
+        let topLeft = Phaser.Math.Linear(130, 40, t);
+        let topRight = Phaser.Math.Linear(230, 320, t);
+        let x = Phaser.Math.Linear(topLeft, topRight, l / 3);
+        let y = t * 640;
+        if (s === 0) {
+          laneGraphics.moveTo(x, y);
+        } else {
+          laneGraphics.lineTo(x, y);
+        }
+      }
+      laneGraphics.strokePath();
     }
   }
-}
 
-function restartGame() {
-  gameOver = false;
-  gameOverText.style.display = 'none';
-  score = 0;
+  /**
+   * Create UI (score + game over text)
+   */
+  createUI() {
+    // Score
+    this.scoreText = document.createElement('div');
+    this.scoreText.id = 'scoreText';
+    this.scoreText.innerHTML = 'Score: 0';
+    document.getElementById('gameContainer').appendChild(this.scoreText);
 
-  // Reset player
-  currentLane = 1;
-  player.x = lanes[currentLane];
+    // Game Over
+    this.gameOverText = document.createElement('div');
+    this.gameOverText.id = 'gameOverText';
+    this.gameOverText.innerHTML = 'GAME OVER<br><small>Tap to Restart</small>';
+    document.getElementById('gameContainer').appendChild(this.gameOverText);
+  }
 
-  // Clear obstacles
-  obstacles.clear(true, true);
+  /**
+   * Spawn an obstacle at the horizon (virtY=0) in one of the 3 lanes
+   */
+  spawnObstacle() {
+    const laneIndex = Phaser.Math.Between(0, 2);
+    const color = Phaser.Display.Color.RandomRGB().color;
+
+    // We'll create a rectangle for the obstacle, store a 'virtY' property
+    let obsRect = this.add.rectangle(0, 0, 30, 30, color);
+    this.physics.add.existing(obsRect);
+    obsRect.virtLane = laneIndex;
+    obsRect.virtY = 0; // start at horizon
+    this.obstacles.add(obsRect);
+    this.updateObstacle(obsRect);
+  }
+
+  /**
+   * Each frame, update an obstacle's position & scale based on virtY
+   */
+  updateObstacle(obs) {
+    const laneIndex = obs.virtLane;
+    const y = obs.virtY;
+    // We'll get the (x, screenY, scale) from our perspective transform
+    const { x, screenY, scale } = this.getPerspective(laneIndex, y);
+
+    obs.x = x;
+    obs.y = screenY;
+    // Adjust the rectangle's size according to scale
+    // original is 30×30 at the bottom, so multiply
+    obs.setScale(scale);
+  }
+
+  /**
+   * Update player shape each frame. 
+   * We'll treat the player's laneIndex and virtualY ~ 600.
+   */
+  updatePlayerPosition() {
+    const { x, screenY, scale } = this.getPerspective(this.currentLaneIndex, this.playerY);
+    this.playerRect.x = x;
+    this.playerRect.y = screenY;
+    this.playerRect.setScale(scale);
+  }
+
+  /**
+   * A simple perspective transform:
+   * - The road top is narrower (130->230).
+   * - The road bottom is wider (40->320).
+   * - y=0 = horizon, y=640=bottom
+   * 
+   * We'll find the leftEdge & rightEdge at that virtual y, then compute x 
+   * for the 3-lane system. We'll also compute a scale for object size. 
+   */
+  getPerspective(laneIndex, virtY) {
+    // 1) Interpolate left & right edges
+    // At top (y=0), left=130, right=230
+    // At bottom (y=640), left=40, right=320
+    const t = virtY / 640; // 0 at top, 1 at bottom
+    const leftEdge = Phaser.Math.Linear(130, 40, t);
+    const rightEdge = Phaser.Math.Linear(230, 320, t);
+    const roadWidth = rightEdge - leftEdge;
+
+    // 2) Lane: -1,0,+1 => 3 lanes => positions are 1/6, 3/6, 5/6 across road 
+    // (since -1,0,+1 is basically 3 steps)
+    // We'll map lane offsets to something like 1/6, 3/6, 5/6
+    // but let's do:
+    // lane=0 => 1/4, lane=1 => 1/2, lane=2 => 3/4 across the road
+    const fraction = 0.25 + laneIndex * 0.25;
+
+    const x = leftEdge + roadWidth * fraction;
+    const screenY = virtY;
+
+    // 3) Scale: We'll assume 0.5 at horizon, 1.0 at bottom
+    // Or you can do a bigger difference. Let's do 0.3 at top, 1.2 at bottom
+    const scale = Phaser.Math.Linear(0.3, 1.2, t);
+
+    return { x, screenY, scale };
+  }
+
+  /**
+   * Collision callback
+   */
+  handleCollision() {
+    this.gameOver = true;
+    this.gameOverText.style.display = 'block';
+  }
+
+  /**
+   * Handle swipe
+   */
+  handleSwipe() {
+    const distX = this.endX - this.startX;
+    const distY = this.endY - this.startY;
+    const SWIPE_THRESHOLD = 50;
+
+    if (Math.abs(distX) > Math.abs(distY)) {
+      // left
+      if (distX < -SWIPE_THRESHOLD && this.currentLaneIndex > 0) {
+        this.currentLaneIndex--;
+      }
+      // right
+      else if (distX > SWIPE_THRESHOLD && this.currentLaneIndex < 2) {
+        this.currentLaneIndex++;
+      }
+    }
+  }
+
+  /**
+   * Restart game
+   */
+  restartGame() {
+    this.gameOver = false;
+    this.gameOverText.style.display = 'none';
+    this.score = 0;
+
+    // Reset lanes
+    this.currentLaneIndex = 1;
+    this.playerY = 600;
+    this.obstacles.clear(true, true);
+  }
 }
